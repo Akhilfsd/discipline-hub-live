@@ -407,4 +407,90 @@ export default function DisciplineHubPro() {
                     backgroundColor: topic.completed ? '#064e3b33' : '#161b2e',
                     border: topic.completed ? '1px solid #059669' : '1px solid #1e293b',
                     padding: '16px',
-                    borderRadius: '1
+                    borderRadius: '16px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '14px'
+                  }}
+                >
+                  <div style={{
+                    width: '24px', height: '24px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold',
+                    border: topic.completed ? '1px solid #34d399' : '1px solid #475569',
+                    backgroundColor: topic.completed ? '#34d399' : '#0f172a',
+                    color: topic.completed ? '#020617' : 'transparent'
+                  }}>
+                    ✓
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '13px', fontWeight: '700', color: topic.completed ? '#34d399' : '#f8fafc', display: 'block' }}>
+                      {topic.title}
+                    </span>
+                    <span style={{ fontSize: '10px', color: '#94a3b8', marginTop: '3px', display: 'inline-block' }}>
+                      {topic.category}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: POMODORO TIMER */}
+        {activeTab === 'Pomodoro Timer' && (
+          <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '24px', padding: '60px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}>
+            <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#34d399', margin: 0 }}>Uncompromising Deep Work Timer</h2>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button 
+                onClick={() => { setPomodoroMode('work'); setPomodoroSeconds(25 * 60); setIsPomodoroRunning(false); }}
+                style={{ padding: '8px 16px', borderRadius: '10px', border: 'none', backgroundColor: pomodoroMode === 'work' ? '#059669' : '#1e293b', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
+              >
+                Work (25m)
+              </button>
+              <button 
+                onClick={() => { setPomodoroMode('break'); setPomodoroSeconds(5 * 60); setIsPomodoroRunning(false); }}
+                style={{ padding: '8px 16px', borderRadius: '10px', border: 'none', backgroundColor: pomodoroMode === 'break' ? '#059669' : '#1e293b', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
+              >
+                Break (5m)
+              </button>
+            </div>
+            
+            <div style={{ fontSize: '72px', fontWeight: '900', color: '#f8fafc', letterSpacing: '0.05em' }}>
+              {String(Math.floor(pomodoroSeconds / 60)).padStart(2, '0')}:{String(pomodoroSeconds % 60).padStart(2, '0')}
+            </div>
+
+            <div style={{ display: 'flex', gap: '16px' }}>
+              <button 
+                onClick={() => setIsPomodoroRunning(!isPomodoroRunning)}
+                style={{ backgroundColor: isPomodoroRunning ? '#dc2626' : '#059669', color: '#fff', border: 'none', padding: '14px 32px', borderRadius: '14px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                {isPomodoroRunning ? 'Pause Session' : 'Start Focus'}
+              </button>
+              <button 
+                onClick={() => { setIsPomodoroRunning(false); setPomodoroSeconds(pomodoroMode === 'work' ? 25 * 60 : 5 * 60); }}
+                style={{ backgroundColor: '#1e293b', color: '#cbd5e1', border: '1px solid #334155', padding: '14px 24px', borderRadius: '14px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: ANALYTICS & HEATMAP */}
+        {activeTab === 'Analytics & Heatmap' && (
+          <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '24px', padding: '40px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#34d399', margin: 0 }}>Consistency Matrix & Analytics</h2>
+            <p style={{ fontSize: '13px', color: '#94a3b8' }}>Review your cumulative execution scores and long-term discipline scorecards.</p>
+            
+            <div style={{ backgroundColor: '#161b2e', padding: '24px', borderRadius: '16px', border: '1px solid #334155', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#f8fafc', margin: 0 }}>Current Streak Status</p>
+              <p style={{ fontSize: '28px', fontWeight: '900', color: '#34d399', margin: 0 }}>🔥 3 Day Active Streak</p>
+              <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0 }}>Keep logging your daily habits before midnight to maintain momentum.</p>
+            </div>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+}
