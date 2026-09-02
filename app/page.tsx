@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { CheckCircle2, Circle, Plus, Calendar, Award, BarChart2, Flame, Trash2, Download, FileText, Database, Clock, Play, Pause, RotateCcw, TrendingUp, Camera, Sparkles, ShieldAlert, Target } from 'lucide-react';
 
 interface Activity {
   id: string;
@@ -244,16 +243,6 @@ function toggleSqlSubtopicStorage(topicId: string, subtopic: string): SqlTopic[]
   return updated;
 }
 
-function saveDayNote(date: string, notes: string): void {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(`discipline_note_${date}`, notes);
-}
-
-function getDayNote(date: string): string {
-  if (typeof window === 'undefined') return '';
-  return localStorage.getItem(`discipline_note_${date}`) || '';
-}
-
 function getPastWeekDays(): string[] {
   const days: string[] = [];
   for (let i = 6; i >= 0; i--) {
@@ -262,23 +251,6 @@ function getPastWeekDays(): string[] {
     days.push(d.toISOString().split('T')[0]);
   }
   return days;
-}
-
-function calculateStreak(activityId: string, logs: DailyLog[]): number {
-  let streak = 0;
-  const today = new Date();
-  for (let i = 0; i < 30; i++) {
-    const d = new Date();
-    d.setDate(today.getDate() - i);
-    const dateStr = d.toISOString().split('T')[0];
-    const log = logs.find(l => l.activityId === activityId && l.date === dateStr);
-    if (log && log.completed) {
-      streak++;
-    } else if (i > 0) {
-      break;
-    }
-  }
-  return streak;
 }
 
 function getDailyGrade(rate: number): { grade: string; color: string } {
@@ -291,7 +263,7 @@ function getDailyGrade(rate: number): { grade: string; color: string } {
 }
 
 export default function Page() {
-  const [activeTab, setActiveTab] = useState<'habits' | 'sql' | 'timer' | 'analytics'>('habits');
+  const [activeTab, setActiveTab] = useState<'habits' | 'sql' | 'analytics'>('habits');
   const [activities, setActivities] = useState<Activity[]>([]);
   const [allLogs, setAllLogs] = useState<DailyLog[]>([]);
   const [currentDate, setCurrentDate] = useState<string>(new Date().toISOString().split('T')[0]);
@@ -301,7 +273,6 @@ export default function Page() {
   const [category, setCategory] = useState('Health');
   const [targetTime, setTargetTime] = useState('08:00');
   const [showForm, setShowForm] = useState(false);
-  const [dailyNote, setDailyNote] = useState('');
 
   const [targetGoalDate, setTargetGoalDate] = useState<string>(() => {
     if (typeof window !== 'undefined') {
@@ -313,7 +284,6 @@ export default function Page() {
     return defaultTarget.toISOString().split('T')[0];
   });
   const [isEditingTarget, setIsEditingTarget] = useState(false);
-
   const [currentQuote, setCurrentQuote] = useState('');
 
   const [showScanner, setShowScanner] = useState(false);
@@ -322,33 +292,17 @@ export default function Page() {
   const [selectedCategoryForScan, setSelectedCategoryForScan] = useState('Productivity');
 
   const [sqlTopics, setSqlTopics] = useState<SqlTopic[]>([]);
-  const [selectedSqlModule, setSelectedSqlModule] = useState<string>('All');
-
-  const [timerSeconds, setTimerSeconds] = useState<number>(25 * 60);
-  const [timerActive, setTimerActive] = useState<boolean>(false);
 
   useEffect(() => {
     loadData();
     const randomIndex = Math.floor(Math.random() * DISCIPLINE_QUOTES.length);
     setCurrentQuote(DISCIPLINE_QUOTES[randomIndex]);
-    checkDateRollover();
   }, [currentDate]);
 
   function loadData() {
     setActivities(getActivities());
     setAllLogs(getAllLogs());
-    setDailyNote(getDayNote(currentDate));
     setSqlTopics(getSqlTopics());
-  }
-
-  function checkDateRollover() {
-    if (typeof window === 'undefined') return;
-    const lastActiveDate = localStorage.getItem('discipline_last_active_date');
-    const todayStr = new Date().toISOString().split('T')[0];
-    if (lastActiveDate && lastActiveDate !== todayStr) {
-      console.log('New day detected. Initializing fresh daily state parameters.');
-    }
-    localStorage.setItem('discipline_last_active_date', todayStr);
   }
 
   function handleSaveTargetDate(newDate: string) {
@@ -400,7 +354,7 @@ export default function Page() {
       setScannedTasks([
         'Intense morning focus session',
         'Review database query indexing & SQL joins',
-        'Physical workout & physical conditioning',
+        'Physical workout & conditioning',
         'Zero external distractions'
       ]);
     }, 1200);
@@ -433,18 +387,17 @@ export default function Page() {
 
   const weekDays = getPastWeekDays();
   const filteredActivities = selectedCategory === 'All' ? activities : activities.filter(a => a.category === selectedCategory);
-  const filteredSqlTopics = selectedSqlModule === 'All' ? sqlTopics : sqlTopics.filter(t => t.module === selectedSqlModule);
 
   return (
     <main className="min-h-screen bg-slate-950 p-6">
       <div className="max-w-4xl mx-auto space-y-8 font-sans text-slate-100">
         
-        {/* TOP BANNER: Countdown & Discipline Quote */}
+        {/* TOP BANNER */}
         <div className="bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-indigo-900/50 p-6 rounded-2xl shadow-2xl space-y-4">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-indigo-900/40 pb-4">
             <div className="flex items-center gap-3">
               <div className="p-3 bg-indigo-600/20 border border-indigo-500/30 rounded-xl text-indigo-400">
-                <ShieldAlert size={24} />
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
               </div>
               <div>
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-indigo-400">Mission Countdown Target</h2>
@@ -471,14 +424,14 @@ export default function Page() {
                   onClick={() => setIsEditingTarget(true)}
                   className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 px-3.5 py-2 rounded-xl text-xs font-medium text-slate-300 border border-slate-700 transition"
                 >
-                  <Target size={14} className="text-indigo-400" /> Change Target Date ({targetGoalDate})
+                  <svg className="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Change Target Date ({targetGoalDate})
                 </button>
               )}
             </div>
           </div>
 
           <div className="flex items-start gap-3 bg-slate-950/60 p-4 rounded-xl border border-slate-800/80">
-            <Sparkles className="text-amber-400 shrink-0 mt-0.5" size={18} />
+            <svg className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
             <p className="text-xs sm:text-sm italic text-slate-300 font-medium leading-relaxed">
               "{currentQuote}"
             </p>
@@ -489,13 +442,13 @@ export default function Page() {
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2 text-emerald-400">
-              <Award /> Discipline & Habit Hub Pro
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg> Discipline Hub Live
             </h1>
-            <p className="text-slate-400 text-sm mt-1">Uncompromising focus, smart tracking, and granular SQL mastery.</p>
+            <p className="text-slate-400 text-sm mt-1">Uncompromising focus, smart tracking, and granular mastery.</p>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             <div className="flex items-center gap-2 bg-slate-800 px-3 py-2 rounded-xl border border-slate-700">
-              <Calendar size={18} className="text-emerald-400" />
+              <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
               <input 
                 type="date" 
                 value={currentDate} 
@@ -503,19 +456,6 @@ export default function Page() {
                 className="bg-transparent text-sm text-slate-200 outline-none cursor-pointer"
               />
             </div>
-            <button 
-              onClick={() => {
-                const data = { activities: getActivities(), logs: getAllLogs(), sqlTopics: getSqlTopics() };
-                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url; a.download = `discipline-backup-${currentDate}.json`; a.click();
-              }}
-              title="Backup Data"
-              className="bg-slate-800 hover:bg-slate-700 p-2.5 rounded-xl border border-slate-700 text-slate-300 transition"
-            >
-              <Download size={18} />
-            </button>
           </div>
         </header>
 
@@ -527,7 +467,7 @@ export default function Page() {
               activeTab === 'habits' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <BarChart2 size={18} /> Daily Habits & Scan
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg> Daily Habits & Scan
           </button>
           <button
             onClick={() => setActiveTab('sql')}
@@ -535,15 +475,7 @@ export default function Page() {
               activeTab === 'sql' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Database size={18} /> SQL Roadmap ({completedSubtopicsCount}/{totalSubtopicsCount})
-          </button>
-          <button
-            onClick={() => setActiveTab('timer')}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition ${
-              activeTab === 'timer' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <Clock size={18} /> Pomodoro Timer
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg> SQL Roadmap ({completedSubtopicsCount}/{totalSubtopicsCount})
           </button>
           <button
             onClick={() => setActiveTab('analytics')}
@@ -551,7 +483,7 @@ export default function Page() {
               activeTab === 'analytics' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <TrendingUp size={18} /> Analytics & Heatmap
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg> Analytics & Matrix
           </button>
         </div>
 
@@ -561,7 +493,7 @@ export default function Page() {
             <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-3">
               <div className="flex justify-between items-center text-sm">
                 <span className="font-medium text-slate-300 flex items-center gap-2">
-                  <BarChart2 size={18} className="text-emerald-400" /> Today's Completion Rate
+                  <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg> Today's Completion Rate
                 </span>
                 <div className="flex items-center gap-3">
                   <span className={`px-2.5 py-0.5 rounded-lg border text-xs font-black uppercase tracking-wider ${performanceBadge.color}`}>
@@ -573,116 +505,44 @@ export default function Page() {
               <div className="w-full bg-slate-800 h-3 rounded-full overflow-hidden border border-slate-700">
                 <div className="bg-emerald-500 h-full transition-all duration-500 ease-out" style={{ width: `${completionRate}%` }} />
               </div>
-              <div className="text-xs text-slate-400 text-right">
-                {completedCount} of {totalActivities} habits completed for {currentDate}
-              </div>
             </div>
 
-            <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-3">
-              <label className="text-sm font-semibold text-slate-300 flex items-center gap-2">
-                <FileText size={16} className="text-emerald-400" /> Daily Reflection & Focus Log ({currentDate})
-              </label>
-              <textarea
-                value={dailyNote}
-                onChange={(e) => { setDailyNote(e.target.value); saveDayNote(currentDate, e.target.value); }}
-                placeholder="Log your deep work wins or distractions conquered today..."
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 outline-none focus:border-emerald-500 h-24 resize-none"
-              />
-            </div>
-
-            {activities.length > 0 && (
-              <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4 overflow-x-auto">
-                <h2 className="text-lg font-semibold text-slate-200">Weekly Consistency Matrix (Past 7 Days)</h2>
-                <div className="min-w-[600px]">
-                  <div className="grid grid-cols-8 gap-2 text-xs font-medium text-slate-400 pb-2 border-b border-slate-800">
-                    <div>Habit</div>
-                    {weekDays.map(date => <div key={date} className="text-center">{date.slice(5)}</div>)}
-                  </div>
-                  <div className="space-y-2 pt-2">
-                    {activities.map(act => (
-                      <div key={act.id} className="grid grid-cols-8 gap-2 items-center text-sm">
-                        <div className="font-medium truncate text-slate-300">{act.title}</div>
-                        {weekDays.map(date => {
-                          const logged = allLogs.find(l => l.activityId === act.id && l.date === date && l.completed);
-                          return (
-                            <div key={date} className="flex justify-center">
-                              <span className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold ${logged ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-600'}`}>
-                                {logged ? '✓' : '·'}
-                              </span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-6">
+            <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-lg font-semibold text-slate-200">Daily Task Board</h2>
-                  <div className="flex gap-1 bg-slate-800 p-1 rounded-xl border border-slate-700 text-xs flex-wrap">
-                    {['All', 'Health', 'Productivity', 'Mindset', 'Habits'].map(cat => (
-                      <button
-                        key={cat}
-                        onClick={() => setSelectedCategory(cat)}
-                        className={`px-3 py-1.5 rounded-lg transition ${selectedCategory === cat ? 'bg-emerald-600 text-white font-medium' : 'text-slate-400 hover:text-slate-200'}`}
-                      >
-                        {cat}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                <h2 className="text-lg font-semibold text-slate-200">Daily Task Board</h2>
                 <div className="flex items-center gap-2 flex-wrap">
                   <button onClick={() => setShowScanner(!showScanner)} className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-sm font-medium transition shadow-lg">
-                    <Camera size={16} /> Scan Note Photo
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg> Scan Note Photo
                   </button>
                   <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium transition">
-                    <Plus size={16} /> New Activity
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/></svg> New Activity
                   </button>
                 </div>
               </div>
 
               {showScanner && (
-                <div className="bg-indigo-950/40 border border-indigo-800/60 p-5 rounded-2xl space-y-4 shadow-inner">
+                <div className="bg-indigo-950/40 border border-indigo-800/60 p-5 rounded-2xl space-y-4">
                   <div className="flex justify-between items-center">
                     <h3 className="text-sm font-semibold text-indigo-300 flex items-center gap-2">
-                      <Sparkles size={16} className="text-indigo-400" /> Browser Note Scanner
+                      <svg className="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg> Browser Note Scanner
                     </h3>
                     <button onClick={() => { setShowScanner(false); setScannedTasks([]); }} className="text-slate-400 hover:text-slate-200 text-xs">Close</button>
                   </div>
-                  <p className="text-xs text-slate-400">Upload a notebook snapshot to parse and convert daily tasks automatically.</p>
-                  <div className="flex flex-col sm:flex-row gap-3 items-center">
-                    <select
-                      value={selectedCategoryForScan}
-                      onChange={(e) => setSelectedCategoryForScan(e.target.value)}
-                      className="bg-slate-900 border border-indigo-700 rounded-lg px-3 py-2 text-sm text-slate-100 outline-none w-full sm:w-auto"
-                    >
-                      <option value="Health">Health & Fitness</option>
-                      <option value="Productivity">Productivity</option>
-                      <option value="Mindset">Mindset & Learning</option>
-                      <option value="Habits">General Habits</option>
-                    </select>
-                    <label className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition cursor-pointer w-full sm:w-auto">
-                      <Camera size={16} /> Select Notebook Image
-                      <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-                    </label>
-                  </div>
-                  {scannerLoading && <div className="text-center py-6 text-indigo-300 text-sm">Analyzing notebook image lines...</div>}
+                  <label className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition cursor-pointer">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg> Select Notebook Image
+                    <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                  </label>
+                  {scannerLoading && <div className="text-center py-4 text-indigo-300 text-sm">Analyzing notebook image lines...</div>}
                   {scannedTasks.length > 0 && !scannerLoading && (
                     <div className="bg-slate-900 border border-indigo-900 p-4 rounded-xl space-y-3">
-                      <h4 className="text-xs font-semibold text-indigo-300 uppercase tracking-wider">Extracted Tasks Ready for Import:</h4>
-                      <div className="space-y-2">
-                        {scannedTasks.map((t, idx) => (
-                          <div key={idx} className="flex items-center gap-2 text-sm text-slate-200 bg-slate-800/80 p-2.5 rounded-lg border border-slate-700">
-                            <CheckCircle2 size={16} className="text-indigo-400 shrink-0" />
-                            <span>{t}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <button onClick={handleImportScannedTasks} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl font-medium text-sm transition mt-2 shadow-lg">
+                      <h4 className="text-xs font-semibold text-indigo-300 uppercase tracking-wider">Extracted Tasks:</h4>
+                      {scannedTasks.map((t, idx) => (
+                        <div key={idx} className="flex items-center gap-2 text-sm text-slate-200 bg-slate-800 p-2.5 rounded-lg">
+                          <svg className="w-4 h-4 text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>
+                          <span>{t}</span>
+                        </div>
+                      ))}
+                      <button onClick={handleImportScannedTasks} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl font-medium text-sm transition">
                         Confirm & Add to Activities
                       </button>
                     </div>
@@ -694,7 +554,7 @@ export default function Page() {
                 <form onSubmit={handleAddActivity} className="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-4">
                   <h3 className="text-sm font-semibold text-slate-300">Add New Habit</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <input type="text" placeholder="Activity Title" value={title} onChange={(e) => setTitle(e.target.value)} className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 outline-none focus:border-emerald-500" />
+                    <input type="text" placeholder="Activity Title" value={title} onChange={(e) => setTitle(e.target.value)} className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 outline-none" />
                     <select value={category} onChange={(e) => setCategory(e.target.value)} className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 outline-none">
                       <option value="Health">Health & Fitness</option>
                       <option value="Productivity">Productivity</option>
@@ -708,30 +568,26 @@ export default function Page() {
 
               <div className="space-y-3">
                 {filteredActivities.length === 0 ? (
-                  <p className="text-slate-400 text-center py-8 text-sm">No activities found in this category.</p>
+                  <p className="text-slate-400 text-center py-8 text-sm">No activities found. Add your first habit above!</p>
                 ) : (
-                  filteredActivities.map(activity => {
-                    const log = todayLogs.find(l => l.activityId === activity.id);
-                    const isCompleted = log ? log.completed : false;
-                    const streak = calculateStreak(activity.id, allLogs);
-
+                  filteredActivities.map(act => {
+                    const isCompleted = todayLogs.some(l => l.activityId === act.id && l.completed);
                     return (
-                      <div key={activity.id} className={`flex items-center justify-between p-4 rounded-xl border transition ${isCompleted ? 'bg-emerald-950/20 border-emerald-800/50 text-slate-300' : 'bg-slate-800/60 border-slate-700 text-slate-100'}`}>
-                        <div onClick={() => handleToggle(activity.id)} className="flex items-center gap-3 cursor-pointer flex-1">
-                          {isCompleted ? <CheckCircle2 className="text-emerald-400 shrink-0" size={22} /> : <Circle className="text-slate-500 shrink-0" size={22} />}
+                      <div key={act.id} className={`flex items-center justify-between p-4 rounded-xl border transition ${isCompleted ? 'bg-emerald-950/20 border-emerald-800/40' : 'bg-slate-800/50 border-slate-700'}`}>
+                        <div className="flex items-center gap-3 cursor-pointer" onClick={() => handleToggle(act.id)}>
+                          {isCompleted ? (
+                            <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                          ) : (
+                            <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                          )}
                           <div>
-                            <p className={`font-medium ${isCompleted ? 'line-through text-slate-400' : ''}`}>{activity.title}</p>
-                            <span className="text-xs text-slate-400 px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 inline-block mt-1">{activity.category}</span>
+                            <h4 className={`font-medium text-sm ${isCompleted ? 'text-emerald-300 line-through' : 'text-slate-200'}`}>{act.title}</h4>
+                            <span className="text-xs text-slate-400 bg-slate-800 px-2 py-0.5 rounded border border-slate-700">{act.category}</span>
                           </div>
                         </div>
-                        <div className="flex items-center gap-4">
-                          {streak > 0 && (
-                            <span className="hidden sm:flex items-center gap-1 text-orange-400 text-xs font-semibold bg-orange-950/30 px-2.5 py-1 rounded-lg border border-orange-900/40">
-                              <Flame size={14} /> {streak}d
-                            </span>
-                          )}
-                          <button onClick={() => handleDelete(activity.id)} className="text-slate-500 hover:text-red-400 p-1.5 transition"><Trash2 size={16} /></button>
-                        </div>
+                        <button onClick={() => handleDelete(act.id)} className="text-slate-500 hover:text-red-400 p-2 transition">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
                       </div>
                     );
                   })
@@ -745,122 +601,80 @@ export default function Page() {
         {activeTab === 'sql' && (
           <div className="space-y-6">
             <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-3">
-              <div className="flex justify-between items-center text-sm">
-                <span className="font-medium text-slate-300 flex items-center gap-2">
-                  <Database size={18} className="text-emerald-400" /> SQL Subtopic Mastery Progress
-                </span>
-                <span className="font-bold text-emerald-400 text-base">{sqlProgressRate}%</span>
-              </div>
+              <h2 className="text-lg font-semibold text-slate-200">Granular SQL Roadmap Progress</h2>
               <div className="w-full bg-slate-800 h-3 rounded-full overflow-hidden border border-slate-700">
-                <div className="bg-emerald-500 h-full transition-all duration-500 ease-out" style={{ width: `${sqlProgressRate}%` }} />
+                <div className="bg-indigo-500 h-full transition-all duration-500 ease-out" style={{ width: `${sqlProgressRate}%` }} />
               </div>
+              <p className="text-xs text-slate-400 text-right">{completedSubtopicsCount} of {totalSubtopicsCount} subtopics mastered ({sqlProgressRate}%)</p>
             </div>
 
-            <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-6">
-              <div className="flex gap-1 bg-slate-800 p-1 rounded-xl border border-slate-700 text-xs w-fit flex-wrap">
-                {['All', 'Fundamentals', 'Aggregations', 'Joins', 'Advanced', 'Performance'].map(mod => (
-                  <button
-                    key={mod}
-                    onClick={() => setSelectedSqlModule(mod)}
-                    className={`px-3 py-1.5 rounded-lg transition ${selectedSqlModule === mod ? 'bg-emerald-600 text-white font-medium' : 'text-slate-400 hover:text-slate-200'}`}
-                  >
-                    {mod}
-                  </button>
-                ))}
-              </div>
+            <div className="space-y-4">
+              {sqlTopics.map(topic => (
+                <div key={topic.id} className="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+                  <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <h3 className="font-bold text-slate-100">{topic.title}</h3>
+                    <span className="text-xs bg-indigo-950 text-indigo-300 border border-indigo-800/60 px-2.5 py-1 rounded-lg">{topic.module}</span>
+                  </div>
+                  <div className="space-y-2">
+                    {topic.subtopics.map((sub, idx) => {
+                      const isDone = topic.completedSubtopics.includes(sub);
+                      return (
+                        <div 
+                          key={idx} 
+                          onClick={() => {
+                            const updated = toggleSqlSubtopicStorage(topic.id, sub);
+                            setSqlTopics(updated);
+                            playSound('success');
+                          }}
+                          className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition ${isDone ? 'bg-emerald-950/20 border-emerald-800/40 text-emerald-300' : 'bg-slate-800/40 border-slate-700/60 text-slate-300 hover:bg-slate-800'}`}
+                        >
+                          {isDone ? (
+                            <svg className="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                          ) : (
+                            <svg className="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                          )}
+                          <span className={`text-sm ${isDone ? 'line-through' : ''}`}>{sub}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
-              <div className="space-y-4">
-                {filteredSqlTopics.map(topic => (
-                  <div key={topic.id} className="bg-slate-800/70 border border-slate-700/80 rounded-xl p-5 space-y-3">
-                    <div className="flex justify-between items-center border-b border-slate-700/60 pb-3">
-                      <div>
-                        <h3 className="font-semibold text-slate-100">{topic.title}</h3>
-                        <span className="text-xs text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-950/40 border border-emerald-800/50 inline-block mt-1">{topic.module}</span>
-                      </div>
-                      <span className="text-xs font-medium text-slate-400 bg-slate-900 px-3 py-1 rounded-lg border border-slate-700">
-                        {topic.completedSubtopics.length} / {topic.subtopics.length} done
-                      </span>
-                    </div>
-
-                    <div className="space-y-2 pt-1">
-                      {topic.subtopics.map(sub => {
-                        const isDone = topic.completedSubtopics.includes(sub);
+        {/* TAB 3: ANALYTICS & MATRIX */}
+        {activeTab === 'analytics' && (
+          <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-6">
+            <h2 className="text-lg font-semibold text-slate-200">Weekly Consistency Matrix</h2>
+            {activities.length === 0 ? (
+              <p className="text-slate-400 text-sm">No activities recorded yet.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <div className="min-w-[600px] space-y-3">
+                  <div className="grid grid-cols-8 gap-2 text-xs font-medium text-slate-400 pb-2 border-b border-slate-800">
+                    <div>Habit</div>
+                    {weekDays.map(date => <div key={date} className="text-center">{date.slice(5)}</div>)}
+                  </div>
+                  {activities.map(act => (
+                    <div key={act.id} className="grid grid-cols-8 gap-2 items-center text-sm">
+                      <div className="font-medium truncate text-slate-300">{act.title}</div>
+                      {weekDays.map(date => {
+                        const logged = allLogs.find(l => l.activityId === act.id && l.date === date && l.completed);
                         return (
-                          <div 
-                            key={sub}
-                            onClick={() => {
-                              const updated = toggleSqlSubtopicStorage(topic.id, sub);
-                              playSound('success');
-                              setSqlTopics(updated);
-                            }}
-                            className={`flex items-center gap-3 p-2.5 rounded-lg border transition cursor-pointer ${isDone ? 'bg-emerald-950/20 border-emerald-800/40 text-slate-300' : 'bg-slate-900/50 border-slate-800 text-slate-200'}`}
-                          >
-                            {isDone ? <CheckCircle2 className="text-emerald-400 shrink-0" size={18} /> : <Circle className="text-slate-600 shrink-0" size={18} />}
-                            <span className={`text-sm ${isDone ? 'line-through text-slate-400' : ''}`}>{sub}</span>
+                          <div key={date} className="flex justify-center">
+                            <span className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold ${logged ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-600'}`}>
+                              {logged ? '✓' : '·'}
+                            </span>
                           </div>
                         );
                       })}
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 3: POMODORO TIMER */}
-        {activeTab === 'timer' && (
-          <div className="bg-slate-900 p-8 rounded-2xl border border-slate-800 shadow-xl text-center space-y-6 max-w-lg mx-auto">
-            <h2 className="text-xl font-bold text-slate-100 flex items-center justify-center gap-2">
-              <Clock className="text-emerald-400" /> Focus & Study Timer
-            </h2>
-
-            <div className="py-8 bg-slate-950 rounded-2xl border border-slate-800">
-              <span className="text-6xl font-black text-emerald-400 font-mono tracking-wider">
-                {String(Math.floor(timerSeconds / 60)).padStart(2, '0')}:
-                {String(timerSeconds % 60).padStart(2, '0')}
-              </span>
-            </div>
-
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={() => setTimerActive(!timerActive)}
-                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition ${timerActive ? 'bg-amber-600 hover:bg-amber-500 text-white' : 'bg-emerald-600 hover:bg-emerald-500 text-white'}`}
-              >
-                {timerActive ? <><Pause size={18} /> Pause</> : <><Play size={18} /> Start Session</>}
-              </button>
-              <button
-                onClick={() => { setTimerActive(false); setTimerSeconds(25 * 60); }}
-                className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-3 rounded-xl font-semibold text-sm transition border border-slate-700"
-              >
-                <RotateCcw size={18} /> Reset
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 4: ANALYTICS */}
-        {activeTab === 'analytics' && (
-          <div className="space-y-6">
-            <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
-              <h3 className="font-semibold text-slate-200 flex items-center gap-2">
-                <TrendingUp className="text-emerald-400" size={18} /> 30-Day Discipline Density Heatmap
-              </h3>
-              <div className="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-15 gap-2">
-                {Array.from({ length: 30 }).map((_, i) => {
-                  const d = new Date();
-                  d.setDate(d.getDate() - (29 - i));
-                  const dateStr = d.toISOString().split('T')[0];
-                  const count = allLogs.filter(l => l.date === dateStr && l.completed).length;
-                  const bg = count === 0 ? 'bg-slate-800 border-slate-700' : count < 3 ? 'bg-emerald-800 border-emerald-600' : 'bg-emerald-500 border-emerald-400';
-                  return (
-                    <div key={dateStr} title={`${dateStr}: ${count} tasks`} className={`h-9 rounded-lg border flex flex-col items-center justify-center text-[10px] font-mono ${bg}`}>
-                      <span>{dateStr.slice(8)}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+            )}
           </div>
         )}
 
