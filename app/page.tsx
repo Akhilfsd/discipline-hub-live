@@ -11,15 +11,22 @@ interface Habit {
   completed: { [date: string]: boolean };
 }
 
-interface SqlTopic {
-  id: number;
+interface SubTopic {
+  id: string;
   title: string;
-  category: string;
-  completed: boolean;
   notes: string;
   syntax: string;
   problem: string;
   solution: string;
+}
+
+interface SqlModule {
+  id: number;
+  title: string;
+  category: string;
+  completed: boolean;
+  overview: string;
+  subtopics: SubTopic[];
 }
 
 const initialHabits: Habit[] = [
@@ -28,82 +35,162 @@ const initialHabits: Habit[] = [
   { id: 'h3', title: 'Morning Workout & Stretching', category: 'Health', completed: {} },
 ];
 
-const detailedSqlTopics: Omit<SqlTopic, 'completed'>[] = [
+const detailedSqlModules: Omit<SqlModule, 'completed'>[] = [
   {
     id: 1,
-    title: 'SELECT, WHERE, and Filtering',
+    title: '1. Fundamentals: SELECT, WHERE, and Filtering',
     category: 'Basics',
-    notes: 'Fundamental data retrieval. Use WHERE to filter rows based on conditions. Remember execution order: FROM -> WHERE -> SELECT.',
-    syntax: `SELECT column1, column2\nFROM table_name\nWHERE condition = 'value'\nORDER BY column1 DESC;`,
-    problem: 'Find all employees in the "Engineering" department with a salary greater than 75000.',
-    solution: `SELECT emp_name, salary \nFROM employees \nWHERE department = 'Engineering' AND salary > 75000;`
+    overview: 'Master data retrieval, conditional filtering, projection, and ordering from single relational database tables.',
+    subtopics: [
+      {
+        id: '1a',
+        title: '1.1 Basic SELECT and Column Projections',
+        notes: 'Retrieving exact columns reduces network traffic and database overhead compared to SELECT *. Use DISTINCT to filter out duplicate rows from your result set.',
+        syntax: `SELECT DISTINCT column1, column2 \nFROM table_name \nLIMIT 10;`,
+        problem: 'Fetch unique job titles from the employees table.',
+        solution: `SELECT DISTINCT job_title \nFROM employees;`
+      },
+      {
+        id: '1b',
+        title: '1.2 WHERE Clause Conditional Filtering',
+        notes: 'Filters rows prior to aggregation. Supports operators like =, <>, >, <, BETWEEN, LIKE (wildcards % and _), and IN.',
+        syntax: `SELECT * \nFROM employees \nWHERE department = 'Sales' AND salary BETWEEN 50000 AND 90000;`,
+        problem: 'Find employees whose names start with letter "A" and earn more than 60000.',
+        solution: `SELECT * \nFROM employees \nWHERE emp_name LIKE 'A%' AND salary > 60000;`
+      },
+      {
+        id: '1c',
+        title: '1.3 Sorting with ORDER BY & Limiting',
+        notes: 'Controls result presentation order using ASC (ascending, default) or DESC (descending). Use LIMIT/OFFSET for pagination.',
+        syntax: `SELECT * \nFROM employees \nORDER BY salary DESC, emp_name ASC \nLIMIT 5;`,
+        problem: 'Find the top 3 highest paid employees.',
+        solution: `SELECT emp_name, salary \nFROM employees \nORDER BY salary DESC \nLIMIT 3;`
+      }
+    ]
   },
   {
     id: 2,
-    title: 'GROUP BY & HAVING Aggregations',
+    title: '2. Aggregations: GROUP BY & HAVING',
     category: 'Aggregations',
-    notes: 'GROUP BY aggregates rows sharing common values. Use HAVING to filter groups (since WHERE cannot filter aggregate functions like SUM or COUNT).',
-    syntax: `SELECT category, COUNT(*), AVG(price)\nFROM products\nGROUP BY category\nHAVING AVG(price) > 50;`,
-    problem: 'List departments that have an average salary greater than 60000, along with their average salary.',
-    solution: `SELECT department, AVG(salary) AS avg_sal \nFROM employees \nGROUP BY department \nHAVING AVG(salary) > 60000;`
+    overview: 'Summarize large datasets using aggregate functions (COUNT, SUM, AVG, MIN, MAX) across categories.',
+    subtopics: [
+      {
+        id: '2a',
+        title: '2.1 Aggregate Functions & GROUP BY',
+        notes: 'GROUP BY collapses rows with identical grouping keys into single summary rows. Every column in SELECT must either be in GROUP BY or wrapped in an aggregate function.',
+        syntax: `SELECT department, COUNT(*) AS total_staff, AVG(salary) AS avg_sal\nFROM employees\nGROUP BY department;`,
+        problem: 'Calculate the total count and average salary of employees per department.',
+        solution: `SELECT department, COUNT(id) AS headcount, AVG(salary) AS avg_salary \nFROM employees \nGROUP BY department;`
+      },
+      {
+        id: '2b',
+        title: '2.2 Filtering Groups with HAVING',
+        notes: 'WHERE filters individual rows BEFORE grouping. HAVING filters aggregated groups AFTER GROUP BY execution.',
+        syntax: `SELECT department, AVG(salary)\nFROM employees\nGROUP BY department\nHAVING AVG(salary) > 75000;`,
+        problem: 'List departments that have a total salary expenditure exceeding 300,000.',
+        solution: `SELECT department, SUM(salary) AS total_exp\nFROM employees\nGROUP BY department\nHAVING SUM(salary) > 300000;`
+      }
+    ]
   },
   {
     id: 3,
-    title: 'INNER JOIN vs LEFT JOIN',
+    title: '3. Relational Joins (INNER, LEFT, RIGHT, FULL)',
     category: 'Joins',
-    notes: 'INNER JOIN returns only matching rows from both tables. LEFT JOIN returns all rows from the left table, and matched rows from the right table (NULLs if no match).',
-    syntax: `SELECT a.name, b.order_date\nFROM customers a\nLEFT JOIN orders b ON a.id = b.customer_id;`,
-    problem: 'Retrieve a list of all customers and their corresponding order IDs, including customers who have never placed an order.',
-    solution: `SELECT c.customer_name, o.order_id \nFROM customers c \nLEFT JOIN orders o ON c.id = o.customer_id;`
+    overview: 'Combine columns from two or more tables based on related logical columns between them.',
+    subtopics: [
+      {
+        id: '3a',
+        title: '3.1 INNER JOIN',
+        notes: 'Returns only the records that have matching values in both tables.',
+        syntax: `SELECT e.emp_name, d.dept_name\nFROM employees e\nINNER JOIN departments d ON e.dept_id = d.id;`,
+        problem: 'Get a list of all employees along with their respective department names.',
+        solution: `SELECT e.emp_name, d.dept_name \nFROM employees e \nINNER JOIN departments d ON e.dept_id = d.id;`
+      },
+      {
+        id: '3b',
+        title: '3.2 LEFT JOIN & Unmatched Null Checks',
+        notes: 'Returns all records from the left table, and the matched records from the right table. Unmatched right rows evaluate to NULL.',
+        syntax: `SELECT c.customer_name, o.order_id\nFROM customers c\nLEFT JOIN orders o ON c.id = o.customer_id\nWHERE o.order_id IS NULL;`,
+        problem: 'Find all customers who have never placed an order.',
+        solution: `SELECT c.customer_name \nFROM customers c \nLEFT JOIN orders o ON c.id = o.customer_id \nWHERE o.order_id IS NULL;`
+      }
+    ]
   },
   {
     id: 4,
-    title: 'Subqueries & Nested Selects',
+    title: '4. Subqueries & Nested Queries',
     category: 'Subqueries',
-    notes: 'A query nested inside another query (SELECT, FROM, or WHERE). Use scalar subqueries for single values, or IN/EXISTS for multi-row checks.',
-    syntax: `SELECT emp_name, salary\nFROM employees\nWHERE salary > (SELECT AVG(salary) FROM employees);`,
-    problem: 'Find employees who earn more than the department average salary.',
-    solution: `SELECT e.emp_name, e.salary \nFROM employees e \nWHERE e.salary > (\n    SELECT AVG(sub.salary) \n    FROM employees sub \n    WHERE sub.department = e.department\n);`
+    overview: 'Execute independent inner queries to supply dynamic criteria or datasets to outer queries.',
+    subtopics: [
+      {
+        id: '4a',
+        title: '4.1 Scalar & Multi-Row Subqueries (IN / EXISTS)',
+        notes: 'Scalar subqueries return a single value. Multi-row subqueries work with operators like IN, ANY, ALL, or EXISTS for high-performance correlation.',
+        syntax: `SELECT emp_name, salary\nFROM employees\nWHERE salary > (SELECT AVG(salary) FROM employees);`,
+        problem: 'Find employees earning higher than the company-wide average salary.',
+        solution: `SELECT emp_name, salary \nFROM employees \nWHERE salary > (SELECT AVG(salary) FROM employees);`
+      },
+      {
+        id: '4b',
+        title: '4.2 Correlated Subqueries',
+        notes: 'A subquery that depends on values from the outer query, executed repeatedly for each row evaluated by the outer query.',
+        syntax: `SELECT e.emp_name, e.department, e.salary\nFROM employees e\nWHERE e.salary > (\n    SELECT AVG(sub.salary)\n    FROM employees sub\n    WHERE sub.department = e.department\n);`,
+        problem: 'Find employees who earn more than their own department average salary.',
+        solution: `SELECT e.emp_name, e.department, e.salary \nFROM employees e \nWHERE e.salary > (\n    SELECT AVG(sub.salary) FROM employees sub WHERE sub.department = e.department\n);`
+      }
+    ]
   },
   {
     id: 5,
-    title: 'Common Table Expressions (CTEs)',
+    title: '5. Common Table Expressions (CTEs)',
     category: 'Advanced',
-    notes: 'CTEs (WITH clause) provide a temporary result set that you can reference within a SELECT, INSERT, UPDATE, or DELETE statement. Improves readability over subqueries.',
-    syntax: `WITH HighEarners AS (\n    SELECT id, name, salary FROM employees WHERE salary > 80000\n)\nSELECT * FROM HighEarners ORDER BY salary DESC;`,
-    problem: 'Find the top 2 highest-paid employees in each department using a CTE and ranking logic.',
-    solution: `WITH RankedEmp AS (\n    SELECT emp_name, department, salary,\n           ROW_NUMBER() OVER(PARTITION BY department ORDER BY salary DESC) as rn\n    FROM employees\n)\nSELECT emp_name, department, salary \nFROM RankedEmp \nWHERE rn <= 2;`
+    overview: 'Write modular, highly readable temporary result sets using the WITH clause syntax.',
+    subtopics: [
+      {
+        id: '5a',
+        title: '5.1 Standard CTEs vs Subqueries',
+        notes: 'CTEs improve query readability, allow self-referencing recursion, and can be referenced multiple times within a single main query.',
+        syntax: `WITH HighEarners AS (\n    SELECT * FROM employees WHERE salary > 90000\n)\nSELECT department, COUNT(*) FROM HighEarners GROUP BY department;`,
+        problem: 'Find the count of high earners (salary > 90k) per department using a CTE.',
+        solution: `WITH HighEarners AS (\n    SELECT department FROM employees WHERE salary > 90000\n)\nSELECT department, COUNT(*) AS count_high \nFROM HighEarners \nGROUP BY department;`
+      }
+    ]
   },
   {
     id: 6,
-    title: 'Window Functions (ROW_NUMBER, RANK, DENSE_RANK)',
+    title: '6. Window Functions & Ranking',
     category: 'Window Functions',
-    notes: 'Window functions perform calculations across a set of table rows that are somehow related to the current row, without collapsing rows like GROUP BY does.',
-    syntax: `SELECT emp_name, salary,\n       RANK() OVER(PARTITION BY department ORDER BY salary DESC) as rnk\nFROM employees;`,
-    problem: 'Assign a dense rank to employees based on their salary within their respective departments.',
-    solution: `SELECT emp_name, department, salary,\n       DENSE_RANK() OVER(PARTITION BY department ORDER BY salary DESC) as dense_rk\nFROM employees;`
+    overview: 'Perform calculations across partitions of rows without collapsing the underlying row count.',
+    subtopics: [
+      {
+        id: '6a',
+        title: '6.1 ROW_NUMBER, RANK, and DENSE_RANK',
+        notes: 'ROW_NUMBER gives unique sequential numbers. RANK skips numbers after ties. DENSE_RANK assigns consecutive ranks without gaps.',
+        syntax: `SELECT emp_name, salary,\n       ROW_NUMBER() OVER(PARTITION BY department ORDER BY salary DESC) as rn\nFROM employees;`,
+        problem: 'Find the single highest-paid employee in each department.',
+        solution: `WITH Ranked AS (\n    SELECT emp_name, department, salary,\n           ROW_NUMBER() OVER(PARTITION BY department ORDER BY salary DESC) as rn\n    FROM employees\n)\nSELECT emp_name, department, salary FROM Ranked WHERE rn = 1;`
+      }
+    ]
   },
   {
     id: 7,
-    title: 'Self Joins & Hierarchical Data',
-    category: 'Joins',
-    notes: 'A self join is a regular join, but the table is joined with itself. Useful for hierarchical data like organizational charts (Manager -> Employee).',
-    syntax: `SELECT e.name AS Employee, m.name AS Manager\nFROM employees e\nLEFT JOIN employees m ON e.manager_id = m.id;`,
-    problem: 'Write a query to display each employee name alongside their direct manager name.',
-    solution: `SELECT emp.emp_name AS Employee, mgr.emp_name AS Manager \nFROM employees emp \nLEFT JOIN employees mgr ON emp.manager_id = mgr.id;`
-  },
-  {
-    id: 8,
-    title: 'Conditional Expressions (CASE WHEN)',
+    title: '7. Advanced Logic & Conditional Expressions',
     category: 'Logic',
-    notes: 'Evaluates a list of conditions and returns one of multiple possible result expressions. Equivalent to if-then-else statements in programming.',
-    syntax: `SELECT name,\n       CASE \n           WHEN salary > 90000 THEN 'Senior'\n           ELSE 'Standard'\n       END AS level\nFROM employees;`,
-    problem: 'Categorize employees into salary brackets: "High" (>100k), "Medium" (50k-100k), and "Low" (<50k).',
-    solution: `SELECT emp_name, salary,\n       CASE \n           WHEN salary > 100000 THEN 'High'\n           WHEN salary BETWEEN 50000 AND 100000 THEN 'Medium'\n           ELSE 'Low'\n       END AS salary_bracket\nFROM employees;`
+    overview: 'Implement conditional branching and data transformation directly inside SQL queries.',
+    subtopics: [
+      {
+        id: '7a',
+        title: '7.1 CASE WHEN Conditional Branching',
+        notes: 'Performs if-then-else logic within SELECT, ORDER BY, or GROUP BY statements.',
+        syntax: `SELECT emp_name,\n       CASE \n           WHEN salary >= 100000 THEN 'Executive'\n           WHEN salary >= 60000 THEN 'Senior'\n           ELSE 'Standard'\n       END AS tier\nFROM employees;`,
+        problem: 'Categorize employees into salary brackets ("High", "Medium", "Low").',
+        solution: `SELECT emp_name, salary,\n       CASE \n           WHEN salary > 100000 THEN 'High'\n           WHEN salary BETWEEN 50000 AND 100000 THEN 'Medium'\n           ELSE 'Low'\n       END AS bracket\nFROM employees;`
+      }
+    ]
   }
 ];
 
-const initialSqlRoadmap: SqlTopic[] = detailedSqlTopics.map(item => ({
+const initialSqlRoadmap: SqlModule[] = detailedSqlModules.map(item => ({
   ...item,
   completed: false
 }));
@@ -122,8 +209,8 @@ export default function DisciplineHubUltimate() {
   const [isEditingTarget, setIsEditingTarget] = useState<boolean>(false);
   
   const [habits, setHabits] = useState<Habit[]>(initialHabits);
-  const [sqlRoadmap, setSqlRoadmap] = useState<SqlTopic[]>(initialSqlRoadmap);
-  const [selectedSqlTopic, setSelectedSqlTopic] = useState<SqlTopic | null>(null);
+  const [sqlRoadmap, setSqlRoadmap] = useState<SqlModule[]>(initialSqlRoadmap);
+  const [selectedSqlModule, setSelectedSqlModule] = useState<SqlModule | null>(null);
 
   const [reflection, setReflection] = useState<string>('');
   const [scanNotes, setScanNotes] = useState<string>('');
@@ -142,49 +229,49 @@ export default function DisciplineHubUltimate() {
 
   // Load saved state
   useEffect(() => {
-    const savedHabits = localStorage.getItem('dh_habits_ult_v2');
+    const savedHabits = localStorage.getItem('dh_habits_ult_v3');
     if (savedHabits) setHabits(JSON.parse(savedHabits));
 
-    const savedSql = localStorage.getItem('dh_sql_ult_v2');
+    const savedSql = localStorage.getItem('dh_sql_ult_v3');
     if (savedSql) setSqlRoadmap(JSON.parse(savedSql));
 
-    const savedTarget = localStorage.getItem('dh_target_ult_v2');
+    const savedTarget = localStorage.getItem('dh_target_ult_v3');
     if (savedTarget) setTargetDate(savedTarget);
   }, []);
 
   useEffect(() => {
-    const savedRef = localStorage.getItem(`dh_ref_ult_v2_${currentDate}`);
+    const savedRef = localStorage.getItem(`dh_ref_ult_v3_${currentDate}`);
     setReflection(savedRef || '');
 
-    const savedScan = localStorage.getItem(`dh_scan_ult_v2_${currentDate}`);
+    const savedScan = localStorage.getItem(`dh_scan_ult_v3_${currentDate}`);
     setScanNotes(savedScan || '');
 
-    const savedImgs = localStorage.getItem(`dh_imgs_ult_v2_${currentDate}`);
+    const savedImgs = localStorage.getItem(`dh_imgs_ult_v3_${currentDate}`);
     if (savedImgs) setScannedImages(JSON.parse(savedImgs));
   }, [currentDate]);
 
   useEffect(() => {
-    localStorage.setItem('dh_habits_ult_v2', JSON.stringify(habits));
+    localStorage.setItem('dh_habits_ult_v3', JSON.stringify(habits));
   }, [habits]);
 
   useEffect(() => {
-    localStorage.setItem('dh_sql_ult_v2', JSON.stringify(sqlRoadmap));
+    localStorage.setItem('dh_sql_ult_v3', JSON.stringify(sqlRoadmap));
   }, [sqlRoadmap]);
 
   const handleTargetDateChange = (newDate: string) => {
     setTargetDate(newDate);
-    localStorage.setItem('dh_target_ult_v2', newDate);
+    localStorage.setItem('dh_target_ult_v3', newDate);
     setIsEditingTarget(false);
   };
 
   const handleReflectionChange = (val: string) => {
     setReflection(val);
-    localStorage.setItem(`dh_ref_ult_v2_${currentDate}`, val);
+    localStorage.setItem(`dh_ref_ult_v3_${currentDate}`, val);
   };
 
   const handleScanNotesChange = (val: string) => {
     setScanNotes(val);
-    localStorage.setItem(`dh_scan_ult_v2_${currentDate}`, val);
+    localStorage.setItem(`dh_scan_ult_v3_${currentDate}`, val);
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -194,7 +281,7 @@ export default function DisciplineHubUltimate() {
         if (uploadEvent.target?.result) {
           const updated = [...scannedImages, uploadEvent.target.result as string];
           setScannedImages(updated);
-          localStorage.setItem(`dh_imgs_ult_v2_${currentDate}`, JSON.stringify(updated));
+          localStorage.setItem(`dh_imgs_ult_v3_${currentDate}`, JSON.stringify(updated));
         }
       };
       reader.readAsDataURL(e.target.files[0]);
@@ -204,7 +291,7 @@ export default function DisciplineHubUltimate() {
   const removeImage = (index: number) => {
     const updated = scannedImages.filter((_, i) => i !== index);
     setScannedImages(updated);
-    localStorage.setItem(`dh_imgs_ult_v2_${currentDate}`, JSON.stringify(updated));
+    localStorage.setItem(`dh_imgs_ult_v3_${currentDate}`, JSON.stringify(updated));
   };
 
   useEffect(() => {
@@ -253,11 +340,11 @@ export default function DisciplineHubUltimate() {
     setShowAddModal(false);
   };
 
-  const toggleSqlTopic = (id: number, e?: React.MouseEvent) => {
+  const toggleSqlModule = (id: number, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     setSqlRoadmap(prev => prev.map(item => item.id === id ? { ...item, completed: !item.completed } : item));
-    if (selectedSqlTopic && selectedSqlTopic.id === id) {
-      setSelectedSqlTopic(prev => prev ? { ...prev, completed: !prev.completed } : null);
+    if (selectedSqlModule && selectedSqlModule.id === id) {
+      setSelectedSqlModule(prev => prev ? { ...prev, completed: !prev.completed } : null);
     }
   };
 
@@ -271,7 +358,7 @@ export default function DisciplineHubUltimate() {
 
   return (
     <div style={{ backgroundColor: '#020617', color: '#f8fafc', minHeight: '100vh', width: '100%', padding: '24px', fontFamily: 'sans-serif', boxSizing: 'border-box' }}>
-      <div style={{ width: '100%', maxWidth: '1350px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div style={{ width: '100%', maxWidth: '1400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
         {/* TOP HEADER: MISSION TARGET COUNTDOWN & DATE SELECTOR */}
         <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.2)' }}>
@@ -341,28 +428,28 @@ export default function DisciplineHubUltimate() {
           })}
         </div>
 
-        {/* TAB: SQL ROADMAP */}
+        {/* TAB: SQL ROADMAP (ELABORATE MODULES) */}
         {activeTab === 'SQL Roadmap' && (
           <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
               <div>
-                <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#34d399', margin: 0 }}>SQL Interview & Practice Modules</h2>
-                <p style={{ fontSize: '13px', color: '#94a3b8', margin: '4px 0 0 0' }}>Click any module card below to view detailed concept notes, syntax, and solutions.</p>
+                <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#34d399', margin: 0 }}>Comprehensive SQL Interview & Practice Roadmap</h2>
+                <p style={{ fontSize: '13px', color: '#94a3b8', margin: '4px 0 0 0' }}>Click any module card below to open elaborate subtopics, in-depth notes, syntax, and practical examples.</p>
               </div>
               <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#818cf8', backgroundColor: '#1e293b', padding: '6px 12px', borderRadius: '8px' }}>
-                Progress: {Math.round((completedSqlCount / sqlRoadmap.length) * 100)}%
+                Overall Progress: {Math.round((completedSqlCount / sqlRoadmap.length) * 100)}%
               </span>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: '16px' }}>
-              {sqlRoadmap.map(topic => (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '16px' }}>
+              {sqlRoadmap.map(mod => (
                 <div
-                  key={topic.id}
-                  onClick={() => setSelectedSqlTopic(topic)}
+                  key={mod.id}
+                  onClick={() => setSelectedSqlModule(mod)}
                   style={{
-                    backgroundColor: topic.completed ? '#064e3b22' : '#161b2e',
-                    border: topic.completed ? '1px solid #059669' : '1px solid #334155',
-                    padding: '18px',
+                    backgroundColor: mod.completed ? '#064e3b22' : '#161b2e',
+                    border: mod.completed ? '1px solid #059669' : '1px solid #334155',
+                    padding: '20px',
                     borderRadius: '12px',
                     cursor: 'pointer',
                     display: 'flex',
@@ -373,30 +460,30 @@ export default function DisciplineHubUltimate() {
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
                     <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#818cf8', backgroundColor: '#1e293b', padding: '3px 8px', borderRadius: '6px' }}>
-                      {topic.category}
+                      {mod.category}
                     </span>
                     <div 
-                      onClick={(e) => toggleSqlTopic(topic.id, e)}
+                      onClick={(e) => toggleSqlModule(mod.id, e)}
                       style={{
                         width: '24px', height: '24px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 'bold', flexShrink: 0,
-                        border: topic.completed ? '1px solid #34d399' : '1px solid #475569',
-                        backgroundColor: topic.completed ? '#34d399' : '#0f172a',
-                        color: topic.completed ? '#020617' : 'transparent'
+                        border: mod.completed ? '1px solid #34d399' : '1px solid #475569',
+                        backgroundColor: mod.completed ? '#34d399' : '#0f172a',
+                        color: mod.completed ? '#020617' : 'transparent'
                       }}
                     >
                       ✓
                     </div>
                   </div>
                   <div>
-                    <h3 style={{ fontSize: '15px', fontWeight: '700', color: topic.completed ? '#34d399' : '#f8fafc', margin: '0 0 6px 0' }}>
-                      {topic.title}
+                    <h3 style={{ fontSize: '16px', fontWeight: '700', color: mod.completed ? '#34d399' : '#f8fafc', margin: '0 0 6px 0' }}>
+                      {mod.title}
                     </h3>
                     <p style={{ fontSize: '13px', color: '#94a3b8', margin: 0, lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                      {topic.notes}
+                      {mod.overview}
                     </p>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: '10px', borderTop: '1px solid #1e293b' }}>
-                    <span style={{ fontSize: '12px', color: '#34d399', fontWeight: '600' }}>📖 View Notes & Practice</span>
+                    <span style={{ fontSize: '12px', color: '#34d399', fontWeight: '600' }}>📖 View {mod.subtopics.length} Elaborate Subtopics</span>
                     <span style={{ fontSize: '13px', color: '#cbd5e1' }}>→</span>
                   </div>
                 </div>
@@ -405,57 +492,70 @@ export default function DisciplineHubUltimate() {
           </div>
         )}
 
-        {/* MODAL FOR SQL TOPIC DETAILS */}
-        {selectedSqlTopic && (
-          <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(2, 6, 23, 0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', zIndex: 1000, boxSizing: 'border-box' }}>
-            <div style={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '16px', width: '100%', maxWidth: '750px', maxHeight: '90vh', overflowY: 'auto', padding: '28px', display: 'flex', flexDirection: 'column', gap: '18px', boxSizing: 'border-box' }}>
+        {/* ELABORATE MODAL FOR SQL MODULE SUBTOPICS */}
+        {selectedSqlModule && (
+          <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(2, 6, 23, 0.88)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', zIndex: 1000, boxSizing: 'border-box' }}>
+            <div style={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '16px', width: '100%', maxWidth: '850px', maxHeight: '90vh', overflowY: 'auto', padding: '30px', display: 'flex', flexDirection: 'column', gap: '20px', boxSizing: 'border-box' }}>
               
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
                 <div>
-                  <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#818cf8', backgroundColor: '#1e293b', padding: '4px 10px', borderRadius: '6px' }}>{selectedSqlTopic.category}</span>
-                  <h3 style={{ fontSize: '20px', fontWeight: '800', color: '#34d399', margin: '8px 0 0 0' }}>{selectedSqlTopic.title}</h3>
+                  <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#818cf8', backgroundColor: '#1e293b', padding: '4px 10px', borderRadius: '6px' }}>{selectedSqlModule.category} Module</span>
+                  <h2 style={{ fontSize: '22px', fontWeight: '800', color: '#34d399', margin: '8px 0 4px 0' }}>{selectedSqlModule.title}</h2>
+                  <p style={{ fontSize: '13px', color: '#94a3b8', margin: 0 }}>{selectedSqlModule.overview}</p>
                 </div>
                 <button 
-                  onClick={() => setSelectedSqlTopic(null)}
-                  style={{ background: '#1e293b', border: '1px solid #334155', color: '#f8fafc', fontSize: '16px', width: '34px', height: '34px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  onClick={() => setSelectedSqlModule(null)}
+                  style={{ background: '#1e293b', border: '1px solid #334155', color: '#f8fafc', fontSize: '16px', width: '36px', height: '36px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
                 >
                   ✕
                 </button>
               </div>
 
-              <div style={{ backgroundColor: '#161b2e', border: '1px solid #1e293b', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <h4 style={{ fontSize: '13px', fontWeight: 'bold', color: '#cbd5e1', margin: 0 }}>📖 Concept Notes</h4>
-                <p style={{ fontSize: '13px', color: '#94a3b8', margin: 0, lineHeight: '1.5' }}>{selectedSqlTopic.notes}</p>
+              {/* LIST OF SUBTOPICS IN ELABORATE DETAIL */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '6px' }}>
+                {selectedSqlModule.subtopics.map((sub, index) => (
+                  <div key={sub.id} style={{ backgroundColor: '#161b2e', border: '1px solid #1e293b', borderRadius: '12px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    
+                    <h3 style={{ fontSize: '15px', fontWeight: '700', color: '#34d399', margin: 0 }}>
+                      {sub.title}
+                    </h3>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#cbd5e1' }}>Detailed Notes & Concepts:</span>
+                      <p style={{ fontSize: '13px', color: '#94a3b8', margin: 0, lineHeight: '1.5' }}>{sub.notes}</p>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#cbd5e1' }}>Syntax Formula:</span>
+                      <pre style={{ backgroundColor: '#020617', color: '#34d399', padding: '12px', borderRadius: '8px', fontSize: '12px', overflowX: 'auto', margin: 0, fontFamily: 'monospace', lineHeight: '1.4' }}>
+                        {sub.syntax}
+                      </pre>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', backgroundColor: '#0f172a', padding: '12px', borderRadius: '8px', border: '1px solid #1e293b' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#818cf8' }}>Practical Problem:</span>
+                      <p style={{ fontSize: '13px', color: '#f8fafc', margin: 0, fontWeight: '600' }}>{sub.problem}</p>
+                      
+                      <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#34d399', marginTop: '4px' }}>Optimal Solution Query:</span>
+                      <pre style={{ backgroundColor: '#020617', color: '#34d399', padding: '10px', borderRadius: '6px', fontSize: '12px', overflowX: 'auto', margin: 0, fontFamily: 'monospace', lineHeight: '1.4' }}>
+                        {sub.solution}
+                      </pre>
+                    </div>
+
+                  </div>
+                ))}
               </div>
 
-              <div style={{ backgroundColor: '#161b2e', border: '1px solid #1e293b', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <h4 style={{ fontSize: '13px', fontWeight: 'bold', color: '#cbd5e1', margin: 0 }}>⚡ Important Syntax & Formula</h4>
-                <pre style={{ backgroundColor: '#020617', color: '#34d399', padding: '14px', borderRadius: '8px', fontSize: '12px', overflowX: 'auto', margin: 0, fontFamily: 'monospace', lineHeight: '1.4' }}>
-                  {selectedSqlTopic.syntax}
-                </pre>
-              </div>
-
-              <div style={{ backgroundColor: '#161b2e', border: '1px solid #1e293b', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <h4 style={{ fontSize: '13px', fontWeight: 'bold', color: '#cbd5e1', margin: 0 }}>💡 Practical Problem</h4>
-                <p style={{ fontSize: '13px', color: '#f8fafc', margin: 0, fontWeight: '600' }}>{selectedSqlTopic.problem}</p>
-                <div>
-                  <p style={{ fontSize: '11px', color: '#818cf8', fontWeight: 'bold', margin: '0 0 4px 0' }}>Optimal Solution:</p>
-                  <pre style={{ backgroundColor: '#020617', color: '#818cf8', padding: '14px', borderRadius: '8px', fontSize: '12px', overflowX: 'auto', margin: 0, fontFamily: 'monospace', lineHeight: '1.4' }}>
-                    {selectedSqlTopic.solution}
-                  </pre>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '6px' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px', paddingTop: '10px', borderTop: '1px solid #1e293b' }}>
                 <button 
-                  onClick={() => toggleSqlTopic(selectedSqlTopic.id)}
-                  style={{ backgroundColor: selectedSqlTopic.completed ? '#065f46' : '#059669', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: '10px', fontSize: '13px', cursor: 'pointer', fontWeight: 'bold' }}
+                  onClick={() => toggleSqlModule(selectedSqlModule.id)}
+                  style={{ backgroundColor: selectedSqlModule.completed ? '#065f46' : '#059669', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '10px', fontSize: '13px', cursor: 'pointer', fontWeight: 'bold' }}
                 >
-                  {selectedSqlTopic.completed ? '✓ Module Completed' : 'Mark as Completed'}
+                  {selectedSqlModule.completed ? '✓ Module Completed' : 'Mark Module as Completed'}
                 </button>
                 <button 
-                  onClick={() => setSelectedSqlTopic(null)}
-                  style={{ backgroundColor: '#334155', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: '10px', fontSize: '13px', cursor: 'pointer', fontWeight: 'bold' }}
+                  onClick={() => setSelectedSqlModule(null)}
+                  style={{ backgroundColor: '#334155', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '10px', fontSize: '13px', cursor: 'pointer', fontWeight: 'bold' }}
                 >
                   Close
                 </button>
