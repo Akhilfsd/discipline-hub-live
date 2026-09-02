@@ -79,20 +79,18 @@ export default function DisciplineHubPro() {
     localStorage.setItem(`dh_reflection_${currentDate}`, value);
   };
 
-  // Explicit width/height on SVGs to prevent blowup bugs
   const renderIcon = (name: string) => {
-    const attr = { width: 18, height: 18, style: { minWidth: 18, minHeight: 18 } };
+    const attr = { width: 22, height: 22, style: { minWidth: 22, minHeight: 22 } };
     switch (name) {
-      case 'Shield': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.059A11.955 11.955 0 012.944 12c0 3.346 1.432 6.357 3.708 8.456a11.955 11.955 0 008.618 3.059A11.955 11.955 0 0021.056 12c0-3.346-1.432-6.357-3.708-8.456z"></path></svg>;
-      case 'Book': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>;
-      case 'List': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>;
-      case 'SQL': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>;
-      case 'Clock': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>;
-      case 'Chart': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>;
-      case 'Calendar': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>;
-      case 'Download': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>;
-      case 'Camera': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>;
-      case 'Plus': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 4v16m8-8H4"></path></svg>;
+      case 'Shield': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.059A11.955 11.955 0 012.944 12c0 3.346 1.432 6.357 3.708 8.456a11.955 11.955 0 008.618 3.059A11.955 11.955 0 0021.056 12c0-3.346-1.432-6.357-3.708-8.456z"></path></svg>;
+      case 'Book': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>;
+      case 'List': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>;
+      case 'SQL': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>;
+      case 'Clock': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>;
+      case 'Chart': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>;
+      case 'Calendar': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>;
+      case 'Download': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>;
+      case 'Plus': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M12 4v16m8-8H4"></path></svg>;
       default: return null;
     }
   };
@@ -102,51 +100,51 @@ export default function DisciplineHubPro() {
     : habits.filter(h => h.category === filterCategory);
 
   return (
-    <div style={{ backgroundColor: '#020617', color: '#f8fafc', minHeight: '100vh', padding: '24px', fontFamily: 'sans-serif' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div style={{ backgroundColor: '#020617', color: '#f8fafc', minHeight: '100vh', padding: '32px 48px', fontFamily: 'sans-serif', boxSizing: 'border-box' }}>
+      <div style={{ width: '100%', maxWidth: '1600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
         {/* MISSION COUNTDOWN BANNER */}
-        <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '20px', padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-            <div style={{ backgroundColor: '#1e293b', padding: '12px', borderRadius: '14px', display: 'flex' }}>{renderIcon('Shield')}</div>
+        <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '24px', padding: '24px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <div style={{ backgroundColor: '#1e293b', padding: '16px', borderRadius: '18px', display: 'flex' }}>{renderIcon('Shield')}</div>
             <div>
-              <p style={{ fontSize: '11px', fontWeight: '700', color: '#818cf8', letterSpacing: '0.05em', margin: 0 }}>MISSION COUNTDOWN TARGET</p>
-              <p style={{ fontSize: '18px', fontWeight: '900', color: '#f8fafc', margin: '4px 0 0 0' }}>{daysRemaining} Days remaining until target date</p>
+              <p style={{ fontSize: '13px', fontWeight: '700', color: '#818cf8', letterSpacing: '0.05em', margin: 0 }}>MISSION COUNTDOWN TARGET</p>
+              <p style={{ fontSize: '22px', fontWeight: '900', color: '#f8fafc', margin: '6px 0 0 0' }}>{daysRemaining} Days remaining until target date</p>
             </div>
           </div>
-          <button style={{ backgroundColor: '#1e293b', border: '1px solid #334155', color: '#cbd5e1', fontSize: '12px', padding: '10px 16px', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button style={{ backgroundColor: '#1e293b', border: '1px solid #334155', color: '#cbd5e1', fontSize: '14px', padding: '12px 20px', borderRadius: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: '600' }}>
             {renderIcon('Calendar')}
             Change Target Date ({MISSION_TARGET_DATE})
           </button>
         </div>
 
         {/* QUOTE CARD */}
-        <div style={{ backgroundColor: '#161b2e', borderRadius: '16px', padding: '16px 20px', border: '1px solid #1e293b', fontStyle: 'italic', color: '#cbd5e1', fontSize: '14px' }}>
+        <div style={{ backgroundColor: '#161b2e', borderRadius: '20px', padding: '20px 28px', border: '1px solid #1e293b', fontStyle: 'italic', color: '#cbd5e1', fontSize: '16px' }}>
           "Your future self is built in the hours you spend alone working in silence."
         </div>
 
         {/* MAIN DASHBOARD HEADER */}
-        <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '20px', padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ backgroundColor: '#064e3b', border: '1px solid #059669', padding: '14px', borderRadius: '16px', display: 'flex' }}>{renderIcon('Book')}</div>
+        <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '24px', padding: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '22px' }}>
+            <div style={{ backgroundColor: '#064e3b', border: '1px solid #059669', padding: '18px', borderRadius: '20px', display: 'flex' }}>{renderIcon('Book')}</div>
             <div>
-              <h1 style={{ fontSize: '24px', fontWeight: '800', color: '#34d399', margin: 0 }}>Discipline & Habit Hub Pro</h1>
-              <p style={{ fontSize: '13px', color: '#94a3b8', margin: '4px 0 0 0' }}>Uncompromising focus, smart tracking, and granular SQL mastery.</p>
+              <h1 style={{ fontSize: '32px', fontWeight: '800', color: '#34d399', margin: 0 }}>Discipline & Habit Hub Pro</h1>
+              <p style={{ fontSize: '15px', color: '#94a3b8', margin: '6px 0 0 0' }}>Uncompromising focus, smart tracking, and granular SQL mastery.</p>
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', color: '#f8fafc', fontSize: '12px', padding: '10px 14px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', color: '#f8fafc', fontSize: '14px', padding: '12px 18px', borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: '600' }}>
               {renderIcon('Calendar')}
               {currentDate.split('-').reverse().join('-')}
             </div>
-            <button style={{ backgroundColor: '#1e293b', border: '1px solid #334155', padding: '10px', borderRadius: '12px', cursor: 'pointer', display: 'flex' }}>
+            <button style={{ backgroundColor: '#1e293b', border: '1px solid #334155', padding: '12px', borderRadius: '14px', cursor: 'pointer', display: 'flex' }}>
               {renderIcon('Download')}
             </button>
           </div>
         </div>
 
         {/* TABS NAVIGATION */}
-        <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', padding: '8px', borderRadius: '16px', display: 'flex', gap: '8px' }}>
+        <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', padding: '10px', borderRadius: '20px', display: 'flex', gap: '10px' }}>
           {[
             { name: 'Daily Habits & Scan', icon: 'List' },
             { name: 'SQL Roadmap (0/41)', icon: 'SQL' },
@@ -159,11 +157,11 @@ export default function DisciplineHubPro() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
-                padding: '10px 16px',
-                borderRadius: '10px',
-                fontSize: '12px',
-                fontWeight: '600',
+                gap: '10px',
+                padding: '14px 22px',
+                borderRadius: '14px',
+                fontSize: '14px',
+                fontWeight: '700',
                 cursor: 'pointer',
                 border: activeTab === tab.name ? '1px solid #059669' : '1px solid transparent',
                 backgroundColor: activeTab === tab.name ? '#064e3b' : 'transparent',
@@ -178,61 +176,62 @@ export default function DisciplineHubPro() {
 
         {/* TAB CONTENT: DAILY HABITS & SCAN */}
         {activeTab === 'Daily Habits & Scan' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
             {/* COMPLETION RATE */}
-            <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '20px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '24px', padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   {renderIcon('List')}
-                  <h2 style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc', margin: 0 }}>Today's Completion Rate</h2>
+                  <h2 style={{ fontSize: '16px', fontWeight: '700', color: '#f8fafc', margin: 0 }}>Today's Completion Rate</h2>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ fontSize: '11px', fontWeight: '800', padding: '3px 8px', borderRadius: '6px', backgroundColor: '#451a03', color: '#fde047', border: '1px solid #713f12' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <span style={{ fontSize: '13px', fontWeight: '800', padding: '5px 12px', borderRadius: '8px', backgroundColor: '#451a03', color: '#fde047', border: '1px solid #713f12' }}>
                     GRADE: {grade}
                   </span>
-                  <span style={{ fontSize: '14px', fontWeight: '900', color: '#34d399' }}>{completionPercent}%</span>
+                  <span style={{ fontSize: '18px', fontWeight: '900', color: '#34d399' }}>{completionPercent}%</span>
                 </div>
               </div>
-              <div style={{ width: '100%', backgroundColor: '#1e293b', height: '10px', borderRadius: '5px', overflow: 'hidden' }}>
+              <div style={{ width: '100%', backgroundColor: '#1e293b', height: '14px', borderRadius: '7px', overflow: 'hidden' }}>
                 <div style={{ width: `${completionPercent}%`, backgroundColor: '#34d399', height: '100%', transition: 'width 0.3s ease' }}></div>
               </div>
-              <p style={{ fontSize: '11px', color: '#94a3b8', textAlign: 'right', margin: 0 }}>
+              <p style={{ fontSize: '13px', color: '#94a3b8', textAlign: 'right', margin: 0 }}>
                 {todayHabits.length} of {habits.length} habits completed for {currentDate}
               </p>
             </div>
 
             {/* DAILY REFLECTION */}
-            <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '20px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '24px', padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 {renderIcon('Book')}
-                <h2 style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc', margin: 0 }}>Daily Reflection & Focus Log ({currentDate})</h2>
+                <h2 style={{ fontSize: '16px', fontWeight: '700', color: '#f8fafc', margin: 0 }}>Daily Reflection & Focus Log ({currentDate})</h2>
               </div>
               <textarea
-                rows={3}
+                rows={4}
                 value={reflection}
                 onChange={(e) => handleReflectionChange(e.target.value)}
                 placeholder="Log your deep work wins or distractions conquered today..."
-                style={{ width: '100%', backgroundColor: '#161b2e', border: '1px solid #334155', borderRadius: '12px', padding: '12px', fontSize: '12px', color: '#f8fafc', resize: 'none', outline: 'none', boxSizing: 'border-box' }}
+                style={{ width: '100%', backgroundColor: '#161b2e', border: '1px solid #334155', borderRadius: '16px', padding: '16px', fontSize: '14px', color: '#f8fafc', resize: 'none', outline: 'none', boxSizing: 'border-box' }}
               />
             </div>
 
             {/* DAILY TASK BOARD */}
-            <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '20px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-                <h2 style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc', margin: 0 }}>Daily Task Board</h2>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <div style={{ backgroundColor: '#161b2e', border: '1px solid #334155', padding: '4px', borderRadius: '10px', display: 'flex', gap: '4px' }}>
+            <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '24px', padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
+                <h2 style={{ fontSize: '16px', fontWeight: '700', color: '#f8fafc', margin: 0 }}>Daily Task Board</h2>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <div style={{ backgroundColor: '#161b2e', border: '1px solid #334155', padding: '6px', borderRadius: '14px', display: 'flex', gap: '6px' }}>
                     {['All', 'Health', 'Productivity', 'Mindset', 'Habits'].map(cat => (
                       <button
                         key={cat}
                         onClick={() => setFilterCategory(cat)}
                         style={{
-                          fontSize: '11px',
-                          padding: '4px 8px',
-                          borderRadius: '6px',
+                          fontSize: '13px',
+                          padding: '6px 14px',
+                          borderRadius: '10px',
                           border: 'none',
                           cursor: 'pointer',
+                          fontWeight: '600',
                           backgroundColor: filterCategory === cat ? '#334155' : 'transparent',
                           color: filterCategory === cat ? '#f8fafc' : '#94a3b8'
                         }}
@@ -243,7 +242,7 @@ export default function DisciplineHubPro() {
                   </div>
                   <button 
                     onClick={() => setShowAddModal(true)}
-                    style={{ backgroundColor: '#059669', color: '#fff', border: 'none', fontSize: '12px', padding: '8px 12px', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600' }}
+                    style={{ backgroundColor: '#059669', color: '#fff', border: 'none', fontSize: '14px', padding: '10px 18px', borderRadius: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '700' }}
                   >
                     {renderIcon('Plus')}
                     New Activity
@@ -252,33 +251,33 @@ export default function DisciplineHubPro() {
               </div>
 
               {showAddModal && (
-                <form onSubmit={handleAddHabit} style={{ backgroundColor: '#161b2e', border: '1px solid #334155', padding: '12px', borderRadius: '12px', display: 'flex', gap: '8px' }}>
+                <form onSubmit={handleAddHabit} style={{ backgroundColor: '#161b2e', border: '1px solid #334155', padding: '16px', borderRadius: '16px', display: 'flex', gap: '12px' }}>
                   <input
                     type="text"
                     placeholder="Enter activity title..."
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
-                    style={{ flex: 1, backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px', padding: '8px', fontSize: '12px', color: '#fff', outline: 'none' }}
+                    style={{ flex: 1, backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '12px', padding: '12px', fontSize: '14px', color: '#fff', outline: 'none' }}
                     autoFocus
                   />
                   <select
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value as any)}
-                    style={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px', padding: '8px', fontSize: '12px', color: '#fff', outline: 'none' }}
+                    style={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '12px', padding: '12px', fontSize: '14px', color: '#fff', outline: 'none' }}
                   >
                     <option value="Productivity">Productivity</option>
                     <option value="Health">Health</option>
                     <option value="Mindset">Mindset</option>
                     <option value="Habits">Habits</option>
                   </select>
-                  <button type="submit" style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer', fontWeight: '600' }}>Add</button>
-                  <button type="button" onClick={() => setShowAddModal(false)} style={{ backgroundColor: '#334155', color: '#fff', border: 'none', padding: '8px 10px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}>Cancel</button>
+                  <button type="submit" style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '12px 20px', borderRadius: '12px', fontSize: '14px', cursor: 'pointer', fontWeight: '700' }}>Add</button>
+                  <button type="button" onClick={() => setShowAddModal(false)} style={{ backgroundColor: '#334155', color: '#fff', border: 'none', padding: '12px 16px', borderRadius: '12px', fontSize: '14px', cursor: 'pointer', fontWeight: '600' }}>Cancel</button>
                 </form>
               )}
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {filteredHabits.length === 0 ? (
-                  <p style={{ fontSize: '12px', color: '#64748b', textAlign: 'center', padding: '20px' }}>No tasks found in this category.</p>
+                  <p style={{ fontSize: '14px', color: '#64748b', textAlign: 'center', padding: '30px' }}>No tasks found in this category.</p>
                 ) : (
                   filteredHabits.map(habit => {
                     const isCompleted = !!habit.completed[currentDate];
@@ -289,18 +288,18 @@ export default function DisciplineHubPro() {
                           display: 'flex',
                           justifyContent: 'space-between',
                           alignItems: 'center',
-                          padding: '12px 16px',
-                          borderRadius: '12px',
+                          padding: '16px 20px',
+                          borderRadius: '16px',
                           border: isCompleted ? '1px solid #065f46' : '1px solid #1e293b',
                           backgroundColor: isCompleted ? '#064e3b33' : '#161b2e'
                         }}
                       >
                         <div 
                           onClick={() => toggleHabit(habit.id)}
-                          style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', flex: 1 }}
+                          style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', flex: 1 }}
                         >
                           <div style={{
-                            width: '20px', height: '20px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 'bold',
+                            width: '26px', height: '26px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 'bold',
                             border: isCompleted ? '1px solid #34d399' : '1px solid #475569',
                             backgroundColor: isCompleted ? '#34d399' : '#0f172a',
                             color: isCompleted ? '#020617' : 'transparent'
@@ -308,17 +307,17 @@ export default function DisciplineHubPro() {
                             ✓
                           </div>
                           <div>
-                            <span style={{ fontSize: '12px', fontWeight: '500', display: 'block', color: isCompleted ? '#34d399' : '#f8fafc', textDecoration: isCompleted ? 'line-through' : 'none' }}>
+                            <span style={{ fontSize: '15px', fontWeight: '600', display: 'block', color: isCompleted ? '#34d399' : '#f8fafc', textDecoration: isCompleted ? 'line-through' : 'none' }}>
                               {habit.title}
                             </span>
-                            <span style={{ fontSize: '10px', padding: '2px 6px', borderRadius: '4px', marginTop: '4px', display: 'inline-block', backgroundColor: '#1e293b', color: '#94a3b8' }}>
+                            <span style={{ fontSize: '11px', fontWeight: '600', padding: '3px 8px', borderRadius: '6px', marginTop: '6px', display: 'inline-block', backgroundColor: '#1e293b', color: '#94a3b8' }}>
                               {habit.category}
                             </span>
                           </div>
                         </div>
                         <button 
                           onClick={() => handleDeleteHabit(habit.id)}
-                          style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '14px' }}
+                          style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '16px', padding: '6px' }}
                         >
                           ✕
                         </button>
@@ -333,9 +332,9 @@ export default function DisciplineHubPro() {
         )}
 
         {activeTab !== 'Daily Habits & Scan' && (
-          <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '20px', padding: '40px', textAlign: 'center' }}>
-            <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#cbd5e1', margin: 0 }}>{activeTab} Module</h3>
-            <p style={{ fontSize: '12px', color: '#64748b', marginTop: '6px' }}>This section is synced and prepped.</p>
+          <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '24px', padding: '60px', textAlign: 'center' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#cbd5e1', margin: 0 }}>{activeTab} Module</h3>
+            <p style={{ fontSize: '14px', color: '#64748b', marginTop: '8px' }}>This section is synced and prepped.</p>
           </div>
         )}
 
