@@ -165,7 +165,7 @@ export default function DisciplineHubPro() {
   };
 
   const renderIcon = (name: string) => {
-    const attr = { width: 24, height: 24, style: { minWidth: 24, minHeight: 24 } };
+    const attr = { width: 18, height: 18, style: { minWidth: 18, minHeight: 18 } };
     switch (name) {
       case 'Shield': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.059A11.955 11.955 0 012.944 12c0 3.346 1.432 6.357 3.708 8.456a11.955 11.955 0 008.618 3.059A11.955 11.955 0 0021.056 12c0-3.346-1.432-6.357-3.708-8.456z"></path></svg>;
       case 'Book': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>;
@@ -182,30 +182,30 @@ export default function DisciplineHubPro() {
   const filteredHabits = filterCategory === 'All' ? habits : habits.filter(h => h.category === filterCategory);
 
   return (
-    <div style={{ backgroundColor: '#020617', color: '#f8fafc', minHeight: '100vh', width: '100%', padding: 'clamp(16px, 3vw, 36px)', fontFamily: 'sans-serif', boxSizing: 'border-box' }}>
-      <div style={{ width: '100%', maxWidth: '1600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ backgroundColor: '#020617', color: '#f8fafc', minHeight: '100vh', width: '100%', padding: '16px', fontFamily: 'sans-serif', boxSizing: 'border-box' }}>
+      <div style={{ width: '100%', maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
         {/* MISSION COUNTDOWN BANNER */}
-        <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '24px', padding: '24px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px', boxSizing: 'border-box' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-            <div style={{ backgroundColor: '#1e293b', padding: '16px', borderRadius: '18px', display: 'flex' }}>{renderIcon('Shield')}</div>
+        <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '14px', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', boxSizing: 'border-box' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ backgroundColor: '#1e293b', padding: '10px', borderRadius: '10px', display: 'flex' }}>{renderIcon('Shield')}</div>
             <div>
-              <p style={{ fontSize: '14px', fontWeight: '700', color: '#818cf8', letterSpacing: '0.05em', margin: 0 }}>MISSION COUNTDOWN TARGET</p>
-              <p style={{ fontSize: 'clamp(20px, 2.5vw, 26px)', fontWeight: '900', color: '#f8fafc', margin: '6px 0 0 0' }}>{daysRemaining} Days remaining until target date</p>
+              <p style={{ fontSize: '11px', fontWeight: '700', color: '#818cf8', letterSpacing: '0.05em', margin: 0 }}>MISSION COUNTDOWN TARGET</p>
+              <p style={{ fontSize: '16px', fontWeight: '800', color: '#f8fafc', margin: '2px 0 0 0' }}>{daysRemaining} Days remaining until target date</p>
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {isEditingTarget ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#1e293b', padding: '8px 14px', borderRadius: '14px', border: '1px solid #334155' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: '#1e293b', padding: '6px 10px', borderRadius: '10px', border: '1px solid #334155' }}>
                 <input
                   type="date"
                   value={targetDate}
                   onChange={(e) => handleTargetDateChange(e.target.value)}
-                  style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '15px', outline: 'none', cursor: 'pointer' }}
+                  style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '13px', outline: 'none', cursor: 'pointer' }}
                 />
                 <button 
                   onClick={() => setIsEditingTarget(false)}
-                  style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '10px', fontSize: '13px', cursor: 'pointer', fontWeight: 'bold' }}
+                  style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '4px 8px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer', fontWeight: 'bold' }}
                 >
                   Done
                 </button>
@@ -213,45 +213,45 @@ export default function DisciplineHubPro() {
             ) : (
               <button 
                 onClick={() => setIsEditingTarget(true)}
-                style={{ backgroundColor: '#1e293b', border: '1px solid #334155', color: '#cbd5e1', fontSize: '15px', padding: '14px 22px', borderRadius: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: '600' }}
+                style={{ backgroundColor: '#1e293b', border: '1px solid #334155', color: '#cbd5e1', fontSize: '12px', padding: '8px 14px', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600' }}
               >
                 {renderIcon('Calendar')}
-                Target Date: {targetDate} (Edit)
+                Target: {targetDate} (Edit)
               </button>
             )}
           </div>
         </div>
 
         {/* ROTATING DAILY QUOTE CARD */}
-        <div style={{ backgroundColor: '#161b2e', borderRadius: '20px', padding: '22px 28px', border: '1px solid #1e293b', fontStyle: 'italic', color: '#cbd5e1', fontSize: 'clamp(15px, 1.8vw, 18px)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+        <div style={{ backgroundColor: '#161b2e', borderRadius: '12px', padding: '14px 18px', border: '1px solid #1e293b', fontStyle: 'italic', color: '#cbd5e1', fontSize: '13px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
           <span>"{currentQuote}"</span>
-          <span style={{ fontSize: '12px', fontStyle: 'normal', fontWeight: '700', backgroundColor: '#1e293b', color: '#818cf8', padding: '6px 12px', borderRadius: '10px' }}>
-            Daily Focus ({currentDate})
+          <span style={{ fontSize: '10px', fontStyle: 'normal', fontWeight: '700', backgroundColor: '#1e293b', color: '#818cf8', padding: '4px 8px', borderRadius: '6px' }}>
+            Focus ({currentDate})
           </span>
         </div>
 
         {/* MAIN DASHBOARD HEADER */}
-        <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '24px', padding: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px', boxSizing: 'border-box' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '22px' }}>
-            <div style={{ backgroundColor: '#064e3b', border: '1px solid #059669', padding: '18px', borderRadius: '20px', display: 'flex' }}>{renderIcon('Book')}</div>
+        <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '14px', padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px', boxSizing: 'border-box' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <div style={{ backgroundColor: '#064e3b', border: '1px solid #059669', padding: '12px', borderRadius: '12px', display: 'flex' }}>{renderIcon('Book')}</div>
             <div>
-              <h1 style={{ fontSize: 'clamp(24px, 3vw, 34px)', fontWeight: '800', color: '#34d399', margin: 0 }}>Discipline & Habit Hub Pro</h1>
-              <p style={{ fontSize: '15px', color: '#94a3b8', margin: '6px 0 0 0' }}>Uncompromising focus, smart tracking, and granular SQL mastery.</p>
+              <h1 style={{ fontSize: '20px', fontWeight: '800', color: '#34d399', margin: 0 }}>Discipline & Habit Hub Pro</h1>
+              <p style={{ fontSize: '12px', color: '#94a3b8', margin: '2px 0 0 0' }}>Uncompromising focus, smart tracking, and granular SQL mastery.</p>
             </div>
           </div>
-          <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', color: '#f8fafc', fontSize: '15px', padding: '12px 18px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: '600' }}>
+          <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', color: '#f8fafc', fontSize: '12px', padding: '8px 12px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600' }}>
             {renderIcon('Calendar')}
             <input
               type="date"
               value={currentDate}
               onChange={(e) => setCurrentDate(e.target.value)}
-              style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '15px', outline: 'none', cursor: 'pointer' }}
+              style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '12px', outline: 'none', cursor: 'pointer' }}
             />
           </div>
         </div>
 
         {/* TABS NAVIGATION */}
-        <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', padding: '12px', borderRadius: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+        <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', padding: '8px', borderRadius: '12px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
           {[
             { name: 'Daily Habits & Scan', icon: 'List' },
             { name: `SQL Roadmap (${completedSqlCount}/41)`, icon: 'SQL' },
@@ -265,14 +265,14 @@ export default function DisciplineHubPro() {
                 key={tab.name}
                 onClick={() => setActiveTab(rawName as Tab)}
                 style={{
-                  flex: '1 1 200px',
+                  flex: '1 1 140px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '10px',
-                  padding: '16px 20px',
-                  borderRadius: '14px',
-                  fontSize: '15px',
+                  gap: '6px',
+                  padding: '10px 14px',
+                  borderRadius: '8px',
+                  fontSize: '12px',
                   fontWeight: '700',
                   cursor: 'pointer',
                   border: isSelected ? '1px solid #059669' : '1px solid transparent',
@@ -289,56 +289,56 @@ export default function DisciplineHubPro() {
 
         {/* TAB 1: DAILY HABITS & SCAN */}
         {activeTab === 'Daily Habits & Scan' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
-            <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '24px', padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '14px', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   {renderIcon('List')}
-                  <h2 style={{ fontSize: '17px', fontWeight: '700', color: '#f8fafc', margin: 0 }}>Today's Completion Rate ({currentDate})</h2>
+                  <h2 style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc', margin: 0 }}>Today's Completion Rate ({currentDate})</h2>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                  <span style={{ fontSize: '13px', fontWeight: '800', padding: '6px 12px', borderRadius: '8px', backgroundColor: '#451a03', color: '#fde047', border: '1px solid #713f12' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '800', padding: '3px 8px', borderRadius: '6px', backgroundColor: '#451a03', color: '#fde047', border: '1px solid #713f12' }}>
                     GRADE: {grade}
                   </span>
-                  <span style={{ fontSize: '20px', fontWeight: '900', color: '#34d399' }}>{completionPercent}%</span>
+                  <span style={{ fontSize: '15px', fontWeight: '900', color: '#34d399' }}>{completionPercent}%</span>
                 </div>
               </div>
-              <div style={{ width: '100%', backgroundColor: '#1e293b', height: '14px', borderRadius: '7px', overflow: 'hidden' }}>
+              <div style={{ width: '100%', backgroundColor: '#1e293b', height: '8px', borderRadius: '4px', overflow: 'hidden' }}>
                 <div style={{ width: `${completionPercent}%`, backgroundColor: '#34d399', height: '100%', transition: 'width 0.3s ease' }}></div>
               </div>
-              <p style={{ fontSize: '13px', color: '#94a3b8', textAlign: 'right', margin: 0 }}>
+              <p style={{ fontSize: '11px', color: '#94a3b8', textAlign: 'right', margin: 0 }}>
                 {todayHabits.length} of {habits.length} habits completed
               </p>
             </div>
 
-            <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '24px', padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '14px', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 {renderIcon('Book')}
-                <h2 style={{ fontSize: '17px', fontWeight: '700', color: '#f8fafc', margin: 0 }}>Daily Reflection & Focus Log ({currentDate})</h2>
+                <h2 style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc', margin: 0 }}>Daily Reflection & Focus Log ({currentDate})</h2>
               </div>
               <textarea
-                rows={4}
+                rows={3}
                 value={reflection}
                 onChange={(e) => handleReflectionChange(e.target.value)}
                 placeholder="Log your deep work wins or distractions conquered today..."
-                style={{ width: '100%', backgroundColor: '#161b2e', border: '1px solid #334155', borderRadius: '16px', padding: '16px', fontSize: '15px', color: '#f8fafc', resize: 'none', outline: 'none', boxSizing: 'border-box' }}
+                style={{ width: '100%', backgroundColor: '#161b2e', border: '1px solid #334155', borderRadius: '10px', padding: '10px', fontSize: '12px', color: '#f8fafc', resize: 'none', outline: 'none', boxSizing: 'border-box' }}
               />
             </div>
 
-            <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '24px', padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-                <h2 style={{ fontSize: '17px', fontWeight: '700', color: '#f8fafc', margin: 0 }}>Daily Task Board</h2>
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap', width: '100%', justifyContent: 'space-between' }}>
-                  <div style={{ backgroundColor: '#161b2e', border: '1px solid #334155', padding: '6px', borderRadius: '14px', display: 'flex', gap: '6px', flexWrap: 'wrap', flex: '1 1 auto' }}>
+            <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '14px', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                <h2 style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc', margin: 0 }}>Daily Task Board</h2>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap', width: '100%', justifyContent: 'space-between' }}>
+                  <div style={{ backgroundColor: '#161b2e', border: '1px solid #334155', padding: '4px', borderRadius: '10px', display: 'flex', gap: '4px', flexWrap: 'wrap', flex: '1 1 auto' }}>
                     {['All', 'Health', 'Productivity', 'Mindset', 'Habits'].map(cat => (
                       <button
                         key={cat}
                         onClick={() => setFilterCategory(cat)}
                         style={{
-                          fontSize: '14px',
-                          padding: '8px 16px',
-                          borderRadius: '10px',
+                          fontSize: '11px',
+                          padding: '6px 10px',
+                          borderRadius: '6px',
                           border: 'none',
                           cursor: 'pointer',
                           fontWeight: '600',
@@ -353,7 +353,7 @@ export default function DisciplineHubPro() {
                   </div>
                   <button 
                     onClick={() => setShowAddModal(true)}
-                    style={{ backgroundColor: '#059669', color: '#fff', border: 'none', fontSize: '15px', padding: '12px 20px', borderRadius: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '700' }}
+                    style={{ backgroundColor: '#059669', color: '#fff', border: 'none', fontSize: '12px', padding: '8px 14px', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '700' }}
                   >
                     {renderIcon('Plus')}
                     New Activity
@@ -362,33 +362,33 @@ export default function DisciplineHubPro() {
               </div>
 
               {showAddModal && (
-                <form onSubmit={handleAddHabit} style={{ backgroundColor: '#161b2e', border: '1px solid #334155', padding: '16px', borderRadius: '16px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                <form onSubmit={handleAddHabit} style={{ backgroundColor: '#161b2e', border: '1px solid #334155', padding: '12px', borderRadius: '10px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   <input
                     type="text"
                     placeholder="Enter activity title..."
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
-                    style={{ flex: '1 1 240px', backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '12px', padding: '12px', fontSize: '15px', color: '#fff', outline: 'none' }}
+                    style={{ flex: '1 1 180px', backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px', padding: '8px 10px', fontSize: '12px', color: '#fff', outline: 'none' }}
                     autoFocus
                   />
                   <select
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value as any)}
-                    style={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '12px', padding: '12px', fontSize: '15px', color: '#fff', outline: 'none' }}
+                    style={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px', padding: '8px 10px', fontSize: '12px', color: '#fff', outline: 'none' }}
                   >
                     <option value="Productivity">Productivity</option>
                     <option value="Health">Health</option>
                     <option value="Mindset">Mindset</option>
                     <option value="Habits">Habits</option>
                   </select>
-                  <button type="submit" style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '12px 22px', borderRadius: '12px', fontSize: '15px', cursor: 'pointer', fontWeight: '700' }}>Add</button>
-                  <button type="button" onClick={() => setShowAddModal(false)} style={{ backgroundColor: '#334155', color: '#fff', border: 'none', padding: '12px 18px', borderRadius: '12px', fontSize: '15px', cursor: 'pointer', fontWeight: '600' }}>Cancel</button>
+                  <button type="submit" style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer', fontWeight: '700' }}>Add</button>
+                  <button type="button" onClick={() => setShowAddModal(false)} style={{ backgroundColor: '#334155', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer', fontWeight: '600' }}>Cancel</button>
                 </form>
               )}
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {filteredHabits.length === 0 ? (
-                  <p style={{ fontSize: '15px', color: '#64748b', textAlign: 'center', padding: '30px' }}>No tasks found in this category.</p>
+                  <p style={{ fontSize: '12px', color: '#64748b', textAlign: 'center', padding: '20px' }}>No tasks found in this category.</p>
                 ) : (
                   filteredHabits.map(habit => {
                     const isCompleted = !!habit.completed[currentDate];
@@ -399,19 +399,19 @@ export default function DisciplineHubPro() {
                           display: 'flex',
                           justifyContent: 'space-between',
                           alignItems: 'center',
-                          padding: '16px 20px',
-                          borderRadius: '16px',
+                          padding: '10px 14px',
+                          borderRadius: '10px',
                           border: isCompleted ? '1px solid #065f46' : '1px solid #1e293b',
                           backgroundColor: isCompleted ? '#064e3b33' : '#161b2e',
-                          gap: '16px'
+                          gap: '12px'
                         }}
                       >
                         <div 
                           onClick={() => toggleHabit(habit.id)}
-                          style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer', flex: 1, minWidth: 0 }}
+                          style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', flex: 1, minWidth: 0 }}
                         >
                           <div style={{
-                            width: '28px', height: '28px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 'bold',
+                            width: '20px', height: '20px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 'bold',
                             border: isCompleted ? '1px solid #34d399' : '1px solid #475569',
                             backgroundColor: isCompleted ? '#34d399' : '#0f172a',
                             color: isCompleted ? '#020617' : 'transparent'
@@ -419,17 +419,17 @@ export default function DisciplineHubPro() {
                             ✓
                           </div>
                           <div style={{ minWidth: 0, overflow: 'hidden' }}>
-                            <span style={{ fontSize: '16px', fontWeight: '600', display: 'block', color: isCompleted ? '#34d399' : '#f8fafc', textDecoration: isCompleted ? 'line-through' : 'none', textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                            <span style={{ fontSize: '12px', fontWeight: '600', display: 'block', color: isCompleted ? '#34d399' : '#f8fafc', textDecoration: isCompleted ? 'line-through' : 'none', textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden' }}>
                               {habit.title}
                             </span>
-                            <span style={{ fontSize: '11px', fontWeight: '600', padding: '3px 8px', borderRadius: '6px', marginTop: '6px', display: 'inline-block', backgroundColor: '#1e293b', color: '#94a3b8' }}>
+                            <span style={{ fontSize: '10px', fontWeight: '600', padding: '2px 6px', borderRadius: '4px', marginTop: '3px', display: 'inline-block', backgroundColor: '#1e293b', color: '#94a3b8' }}>
                               {habit.category}
                             </span>
                           </div>
                         </div>
                         <button 
                           onClick={() => handleDeleteHabit(habit.id)}
-                          style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '18px', padding: '6px' }}
+                          style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '14px', padding: '4px' }}
                         >
                           ✕
                         </button>
@@ -445,22 +445,22 @@ export default function DisciplineHubPro() {
 
         {/* TAB 2: SQL ROADMAP */}
         {activeTab === 'SQL Roadmap (0/41)' && (
-          <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '24px', padding: '32px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+          <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '14px', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
               <div>
-                <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#34d399', margin: 0 }}>SQL Mastery Roadmap ({completedSqlCount}/41)</h2>
-                <p style={{ fontSize: '13px', color: '#94a3b8', margin: '4px 0 0 0' }}>Check off each modular concept as you lock it in.</p>
+                <h2 style={{ fontSize: '15px', fontWeight: '800', color: '#34d399', margin: 0 }}>SQL Mastery Roadmap ({completedSqlCount}/41)</h2>
+                <p style={{ fontSize: '11px', color: '#94a3b8', margin: '2px 0 0 0' }}>Check off each modular concept as you lock it in.</p>
               </div>
-              <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#818cf8' }}>
+              <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#818cf8' }}>
                 {Math.round((completedSqlCount / 41) * 100)}% Finished
               </div>
             </div>
             
-            <div style={{ width: '100%', backgroundColor: '#1e293b', height: '12px', borderRadius: '6px', overflow: 'hidden' }}>
+            <div style={{ width: '100%', backgroundColor: '#1e293b', height: '8px', borderRadius: '4px', overflow: 'hidden' }}>
               <div style={{ width: `${(completedSqlCount / 41) * 100}%`, backgroundColor: '#34d399', height: '100%', transition: 'width 0.3s ease' }}></div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '14px', maxHeight: '600px', overflowY: 'auto', paddingRight: '6px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '10px', maxHeight: '450px', overflowY: 'auto', paddingRight: '4px' }}>
               {sqlRoadmap.map(topic => (
                 <div
                   key={topic.id}
@@ -468,16 +468,16 @@ export default function DisciplineHubPro() {
                   style={{
                     backgroundColor: topic.completed ? '#064e3b33' : '#161b2e',
                     border: topic.completed ? '1px solid #059669' : '1px solid #1e293b',
-                    padding: '16px',
-                    borderRadius: '16px',
+                    padding: '10px 12px',
+                    borderRadius: '10px',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '14px'
+                    gap: '10px'
                   }}
                 >
                   <div style={{
-                    width: '26px', height: '26px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 'bold',
+                    width: '20px', height: '20px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 'bold',
                     border: topic.completed ? '1px solid #34d399' : '1px solid #475569',
                     backgroundColor: topic.completed ? '#34d399' : '#0f172a',
                     color: topic.completed ? '#020617' : 'transparent'
@@ -485,10 +485,10 @@ export default function DisciplineHubPro() {
                     ✓
                   </div>
                   <div style={{ minWidth: 0 }}>
-                    <span style={{ fontSize: '14px', fontWeight: '700', color: topic.completed ? '#34d399' : '#f8fafc', display: 'block' }}>
+                    <span style={{ fontSize: '12px', fontWeight: '700', color: topic.completed ? '#34d399' : '#f8fafc', display: 'block', textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden' }}>
                       {topic.title}
                     </span>
-                    <span style={{ fontSize: '11px', color: '#94a3b8', marginTop: '3px', display: 'inline-block' }}>
+                    <span style={{ fontSize: '10px', color: '#94a3b8', marginTop: '2px', display: 'inline-block' }}>
                       {topic.category}
                     </span>
                   </div>
@@ -500,37 +500,37 @@ export default function DisciplineHubPro() {
 
         {/* TAB 3: POMODORO TIMER */}
         {activeTab === 'Pomodoro Timer' && (
-          <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '24px', padding: 'clamp(40px, 8vw, 80px) 24px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}>
-            <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#34d399', margin: 0 }}>Uncompromising Deep Work Timer</h2>
-            <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '14px', padding: '30px 20px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+            <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#34d399', margin: 0 }}>Uncompromising Deep Work Timer</h2>
+            <div style={{ display: 'flex', gap: '8px' }}>
               <button 
                 onClick={() => { setPomodoroMode('work'); setPomodoroSeconds(25 * 60); setIsPomodoroRunning(false); }}
-                style={{ padding: '8px 16px', borderRadius: '10px', border: 'none', backgroundColor: pomodoroMode === 'work' ? '#059669' : '#1e293b', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
+                style={{ padding: '6px 12px', borderRadius: '8px', border: 'none', backgroundColor: pomodoroMode === 'work' ? '#059669' : '#1e293b', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '11px' }}
               >
                 Work (25m)
               </button>
               <button 
                 onClick={() => { setPomodoroMode('break'); setPomodoroSeconds(5 * 60); setIsPomodoroRunning(false); }}
-                style={{ padding: '8px 16px', borderRadius: '10px', border: 'none', backgroundColor: pomodoroMode === 'break' ? '#059669' : '#1e293b', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '13px' }}
+                style={{ padding: '6px 12px', borderRadius: '8px', border: 'none', backgroundColor: pomodoroMode === 'break' ? '#059669' : '#1e293b', color: '#fff', cursor: 'pointer', fontWeight: 'bold', fontSize: '11px' }}
               >
                 Break (5m)
               </button>
             </div>
             
-            <div style={{ fontSize: 'clamp(64px, 14vw, 100px)', fontWeight: '900', color: '#f8fafc', letterSpacing: '0.05em' }}>
+            <div style={{ fontSize: 'clamp(48px, 10vw, 72px)', fontWeight: '900', color: '#f8fafc', letterSpacing: '0.05em' }}>
               {String(Math.floor(pomodoroSeconds / 60)).padStart(2, '0')}:{String(pomodoroSeconds % 60).padStart(2, '0')}
             </div>
 
-            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
               <button 
                 onClick={() => setIsPomodoroRunning(!isPomodoroRunning)}
-                style={{ backgroundColor: isPomodoroRunning ? '#dc2626' : '#059669', color: '#fff', border: 'none', padding: '16px 36px', borderRadius: '16px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}
+                style={{ backgroundColor: isPomodoroRunning ? '#dc2626' : '#059669', color: '#fff', border: 'none', padding: '10px 24px', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
               >
                 {isPomodoroRunning ? 'Pause Session' : 'Start Focus'}
               </button>
               <button 
                 onClick={() => { setIsPomodoroRunning(false); setPomodoroSeconds(pomodoroMode === 'work' ? 25 * 60 : 5 * 60); }}
-                style={{ backgroundColor: '#1e293b', color: '#cbd5e1', border: '1px solid #334155', padding: '16px 24px', borderRadius: '16px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}
+                style={{ backgroundColor: '#1e293b', color: '#cbd5e1', border: '1px solid #334155', padding: '10px 18px', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
               >
                 Reset
               </button>
@@ -540,14 +540,14 @@ export default function DisciplineHubPro() {
 
         {/* TAB 4: ANALYTICS & HEATMAP */}
         {activeTab === 'Analytics & Heatmap' && (
-          <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '24px', padding: '32px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#34d399', margin: 0 }}>Consistency Matrix & Analytics</h2>
-            <p style={{ fontSize: '13px', color: '#94a3b8' }}>Review your cumulative execution scores and long-term discipline scorecards.</p>
+          <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '14px', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <h2 style={{ fontSize: '15px', fontWeight: '800', color: '#34d399', margin: 0 }}>Consistency Matrix & Analytics</h2>
+            <p style={{ fontSize: '11px', color: '#94a3b8' }}>Review your cumulative execution scores and long-term discipline scorecards.</p>
             
-            <div style={{ backgroundColor: '#161b2e', padding: '24px', borderRadius: '16px', border: '1px solid #334155', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <p style={{ fontSize: '15px', fontWeight: 'bold', color: '#f8fafc', margin: 0 }}>Current Streak Status</p>
-              <p style={{ fontSize: '28px', fontWeight: '900', color: '#34d399', margin: 0 }}>🔥 Active Streak Tracking</p>
-              <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0 }}>Keep logging your daily habits before midnight to maintain momentum toward target date ({targetDate}).</p>
+            <div style={{ backgroundColor: '#161b2e', padding: '16px', borderRadius: '10px', border: '1px solid #334155', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#f8fafc', margin: 0 }}>Current Streak Status</p>
+              <p style={{ fontSize: '20px', fontWeight: '900', color: '#34d399', margin: 0 }}>🔥 Active Streak Tracking</p>
+              <p style={{ fontSize: '11px', color: '#94a3b8', margin: 0 }}>Keep logging your daily habits before midnight to maintain momentum toward target date ({targetDate}).</p>
             </div>
           </div>
         )}
