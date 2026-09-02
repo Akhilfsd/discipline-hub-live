@@ -11,9 +11,25 @@ interface Habit {
   completed: { [date: string]: boolean };
 }
 
+interface SqlTopic {
+  id: number;
+  title: string;
+  category: string;
+  completed: boolean;
+}
+
 const initialHabits: Habit[] = [
   { id: 'h1', title: 'power bi lecture', category: 'Productivity', completed: {} },
+  { id: 'h2', title: 'LeetCode SQL Practice', category: 'Productivity', completed: {} },
+  { id: 'h3', title: 'Morning Workout', category: 'Health', completed: {} },
 ];
+
+const initialSqlRoadmap: SqlTopic[] = Array.from({ length: 41 }, (_, i) => ({
+  id: i + 1,
+  title: `SQL Topic Module ${i + 1}: Fundamentals & Advanced Queries`,
+  category: i < 15 ? 'Basics & Joins' : i < 30 ? 'Aggregations & Subqueries' : 'Window Functions & Performance',
+  completed: false,
+}));
 
 const MISSION_TARGET_DATE = '2026-12-02';
 
@@ -21,27 +37,57 @@ export default function DisciplineHubPro() {
   const [activeTab, setActiveTab] = useState<Tab>('Daily Habits & Scan');
   const [currentDate, setCurrentDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [habits, setHabits] = useState<Habit[]>(initialHabits);
+  const [sqlRoadmap, setSqlRoadmap] = useState<SqlTopic[]>(initialSqlRoadmap);
   const [reflection, setReflection] = useState<string>('');
   const [filterCategory, setFilterCategory] = useState<string>('All');
   const [newTitle, setNewTitle] = useState<string>('');
   const [newCategory, setNewCategory] = useState<'Health' | 'Productivity' | 'Mindset' | 'Habits'>('Productivity');
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
 
+  // Pomodoro States
+  const [pomodoroSeconds, setPomodoroSeconds] = useState<number>(25 * 60);
+  const [isPomodoroRunning, setIsPomodoroRunning] = useState<boolean>(false);
+  const [pomodoroMode, setPomodoroMode] = useState<'work' | 'break'>('work');
+
+  // Load persistence
   useEffect(() => {
     const savedHabits = localStorage.getItem('dh_habits');
     if (savedHabits) setHabits(JSON.parse(savedHabits));
-    
+
+    const savedSql = localStorage.getItem('dh_sql_roadmap');
+    if (savedSql) setSqlRoadmap(JSON.parse(savedSql));
+  }, []);
+
+  useEffect(() => {
     const savedReflection = localStorage.getItem(`dh_reflection_${currentDate}`);
-    if (savedReflection) setReflection(savedReflection);
+    setReflection(savedReflection || '');
   }, [currentDate]);
 
   useEffect(() => {
     localStorage.setItem('dh_habits', JSON.stringify(habits));
   }, [habits]);
 
+  useEffect(() => {
+    localStorage.setItem('dh_sql_roadmap', JSON.stringify(sqlRoadmap));
+  }, [sqlRoadmap]);
+
+  // Pomodoro Timer tick
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isPomodoroRunning && pomodoroSeconds > 0) {
+      timer = setInterval(() => setPomodoroSeconds(prev => prev - 1), 1000);
+    } else if (pomodoroSeconds === 0) {
+      setIsPomodoroRunning(false);
+      alert(pomodoroMode === 'work' ? 'Pomodoro Session Finished! Take a break.' : 'Break ended! Back to work.');
+    }
+    return () => clearInterval(timer);
+  }, [isPomodoroRunning, pomodoroSeconds, pomodoroMode]);
+
   const todayHabits = habits.filter(h => h.completed[currentDate]);
   const completionPercent = habits.length > 0 ? Math.round((todayHabits.length / habits.length) * 100) : 0;
   const grade = completionPercent >= 90 ? 'A' : completionPercent >= 80 ? 'B' : completionPercent >= 70 ? 'C' : completionPercent >= 60 ? 'D' : 'F';
+
+  const completedSqlCount = sqlRoadmap.filter(s => s.completed).length;
 
   const timeDifference = new Date(MISSION_TARGET_DATE).getTime() - new Date().getTime();
   const daysRemaining = Math.max(0, Math.ceil(timeDifference / (1000 * 3600 * 24)));
@@ -74,6 +120,10 @@ export default function DisciplineHubPro() {
     setHabits(habits.filter(h => h.id !== id));
   };
 
+  const toggleSqlTopic = (id: number) => {
+    setSqlRoadmap(prev => prev.map(item => item.id === id ? { ...item, completed: !item.completed } : item));
+  };
+
   const handleReflectionChange = (value: string) => {
     setReflection(value);
     localStorage.setItem(`dh_reflection_${currentDate}`, value);
@@ -89,15 +139,12 @@ export default function DisciplineHubPro() {
       case 'Clock': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>;
       case 'Chart': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>;
       case 'Calendar': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>;
-      case 'Download': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>;
       case 'Plus': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M12 4v16m8-8H4"></path></svg>;
       default: return null;
     }
   };
 
-  const filteredHabits = filterCategory === 'All' 
-    ? habits 
-    : habits.filter(h => h.category === filterCategory);
+  const filteredHabits = filterCategory === 'All' ? habits : habits.filter(h => h.category === filterCategory);
 
   return (
     <div style={{ backgroundColor: '#020617', color: '#f8fafc', minHeight: '100vh', padding: '32px 48px', fontFamily: 'sans-serif', boxSizing: 'border-box' }}>
@@ -114,7 +161,7 @@ export default function DisciplineHubPro() {
           </div>
           <button style={{ backgroundColor: '#1e293b', border: '1px solid #334155', color: '#cbd5e1', fontSize: '14px', padding: '12px 20px', borderRadius: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: '600' }}>
             {renderIcon('Calendar')}
-            Change Target Date ({MISSION_TARGET_DATE})
+            Target Date ({MISSION_TARGET_DATE})
           </button>
         </div>
 
@@ -124,7 +171,7 @@ export default function DisciplineHubPro() {
         </div>
 
         {/* MAIN DASHBOARD HEADER */}
-        <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '24px', padding: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '24px', padding: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '22px' }}>
             <div style={{ backgroundColor: '#064e3b', border: '1px solid #059669', padding: '18px', borderRadius: '20px', display: 'flex' }}>{renderIcon('Book')}</div>
             <div>
@@ -133,57 +180,62 @@ export default function DisciplineHubPro() {
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', color: '#f8fafc', fontSize: '14px', padding: '12px 18px', borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: '600' }}>
+            <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', color: '#f8fafc', fontSize: '14px', padding: '10px 16px', borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: '600' }}>
               {renderIcon('Calendar')}
-              {currentDate.split('-').reverse().join('-')}
+              <input
+                type="date"
+                value={currentDate}
+                onChange={(e) => setCurrentDate(e.target.value)}
+                style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '14px', outline: 'none', cursor: 'pointer' }}
+              />
             </div>
-            <button style={{ backgroundColor: '#1e293b', border: '1px solid #334155', padding: '12px', borderRadius: '14px', cursor: 'pointer', display: 'flex' }}>
-              {renderIcon('Download')}
-            </button>
           </div>
         </div>
 
         {/* TABS NAVIGATION */}
-        <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', padding: '10px', borderRadius: '20px', display: 'flex', gap: '10px' }}>
+        <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', padding: '10px', borderRadius: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           {[
             { name: 'Daily Habits & Scan', icon: 'List' },
-            { name: 'SQL Roadmap (0/41)', icon: 'SQL' },
+            { name: `SQL Roadmap (${completedSqlCount}/41)`, icon: 'SQL' },
             { name: 'Pomodoro Timer', icon: 'Clock' },
             { name: 'Analytics & Heatmap', icon: 'Chart' },
-          ].map((tab) => (
-            <button
-              key={tab.name}
-              onClick={() => setActiveTab(tab.name as Tab)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                padding: '14px 22px',
-                borderRadius: '14px',
-                fontSize: '14px',
-                fontWeight: '700',
-                cursor: 'pointer',
-                border: activeTab === tab.name ? '1px solid #059669' : '1px solid transparent',
-                backgroundColor: activeTab === tab.name ? '#064e3b' : 'transparent',
-                color: activeTab === tab.name ? '#34d399' : '#94a3b8',
-              }}
-            >
-              {renderIcon(tab.icon)}
-              {tab.name}
-            </button>
-          ))}
+          ].map((tab) => {
+            const rawName = tab.name.startsWith('SQL Roadmap') ? 'SQL Roadmap (0/41)' : tab.name;
+            const isSelected = activeTab === rawName;
+            return (
+              <button
+                key={tab.name}
+                onClick={() => setActiveTab(rawName as Tab)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '14px 22px',
+                  borderRadius: '14px',
+                  fontSize: '14px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  border: isSelected ? '1px solid #059669' : '1px solid transparent',
+                  backgroundColor: isSelected ? '#064e3b' : 'transparent',
+                  color: isSelected ? '#34d399' : '#94a3b8',
+                }}
+              >
+                {renderIcon(tab.icon)}
+                {tab.name}
+              </button>
+            );
+          })}
         </div>
 
-        {/* TAB CONTENT: DAILY HABITS & SCAN */}
+        {/* TAB 1: DAILY HABITS & SCAN */}
         {activeTab === 'Daily Habits & Scan' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
-            {/* COMPLETION RATE */}
             <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '24px', padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   {renderIcon('List')}
-                  <h2 style={{ fontSize: '16px', fontWeight: '700', color: '#f8fafc', margin: 0 }}>Today's Completion Rate</h2>
+                  <h2 style={{ fontSize: '16px', fontWeight: '700', color: '#f8fafc', margin: 0 }}>Today's Completion Rate ({currentDate})</h2>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                   <span style={{ fontSize: '13px', fontWeight: '800', padding: '5px 12px', borderRadius: '8px', backgroundColor: '#451a03', color: '#fde047', border: '1px solid #713f12' }}>
@@ -196,11 +248,10 @@ export default function DisciplineHubPro() {
                 <div style={{ width: `${completionPercent}%`, backgroundColor: '#34d399', height: '100%', transition: 'width 0.3s ease' }}></div>
               </div>
               <p style={{ fontSize: '13px', color: '#94a3b8', textAlign: 'right', margin: 0 }}>
-                {todayHabits.length} of {habits.length} habits completed for {currentDate}
+                {todayHabits.length} of {habits.length} habits completed
               </p>
             </div>
 
-            {/* DAILY REFLECTION */}
             <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '24px', padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 {renderIcon('Book')}
@@ -215,7 +266,6 @@ export default function DisciplineHubPro() {
               />
             </div>
 
-            {/* DAILY TASK BOARD */}
             <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '24px', padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
                 <h2 style={{ fontSize: '16px', fontWeight: '700', color: '#f8fafc', margin: 0 }}>Daily Task Board</h2>
@@ -251,13 +301,13 @@ export default function DisciplineHubPro() {
               </div>
 
               {showAddModal && (
-                <form onSubmit={handleAddHabit} style={{ backgroundColor: '#161b2e', border: '1px solid #334155', padding: '16px', borderRadius: '16px', display: 'flex', gap: '12px' }}>
+                <form onSubmit={handleAddHabit} style={{ backgroundColor: '#161b2e', border: '1px solid #334155', padding: '16px', borderRadius: '16px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                   <input
                     type="text"
                     placeholder="Enter activity title..."
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
-                    style={{ flex: 1, backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '12px', padding: '12px', fontSize: '14px', color: '#fff', outline: 'none' }}
+                    style={{ flex: 1, minWidth: '220px', backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '12px', padding: '12px', fontSize: '14px', color: '#fff', outline: 'none' }}
                     autoFocus
                   />
                   <select
@@ -331,14 +381,30 @@ export default function DisciplineHubPro() {
           </div>
         )}
 
-        {activeTab !== 'Daily Habits & Scan' && (
-          <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '24px', padding: '60px', textAlign: 'center' }}>
-            <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#cbd5e1', margin: 0 }}>{activeTab} Module</h3>
-            <p style={{ fontSize: '14px', color: '#64748b', marginTop: '8px' }}>This section is synced and prepped.</p>
-          </div>
-        )}
+        {/* TAB 2: SQL ROADMAP (0/41) */}
+        {activeTab === 'SQL Roadmap (0/41)' && (
+          <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '24px', padding: '32px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#34d399', margin: 0 }}>SQL Mastery Roadmap ({completedSqlCount}/41 Completed)</h2>
+                <p style={{ fontSize: '13px', color: '#94a3b8', margin: '4px 0 0 0' }}>Check off each modular concept as you lock it in.</p>
+              </div>
+              <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#818cf8' }}>
+                {Math.round((completedSqlCount / 41) * 100)}% Finished
+              </div>
+            </div>
+            
+            <div style={{ width: '100%', backgroundColor: '#1e293b', height: '10px', borderRadius: '5px', overflow: 'hidden' }}>
+              <div style={{ width: `${(completedSqlCount / 41) * 100}%`, backgroundColor: '#34d399', height: '100%', transition: 'width 0.3s ease' }}></div>
+            </div>
 
-      </div>
-    </div>
-  );
-}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '14px', maxHeight: '600px', overflowY: 'auto', paddingRight: '6px' }}>
+              {sqlRoadmap.map(topic => (
+                <div
+                  key={topic.id}
+                  onClick={() => toggleSqlTopic(topic.id)}
+                  style={{
+                    backgroundColor: topic.completed ? '#064e3b33' : '#161b2e',
+                    border: topic.completed ? '1px solid #059669' : '1px solid #1e293b',
+                    padding: '16px',
+                    borderRadius: '1
