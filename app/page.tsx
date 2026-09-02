@@ -2,10 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 
-// ==========================================
-// TYPES & CONSTANTS
-// ==========================================
-
 type Tab = 'Daily Habits & Scan' | 'SQL Roadmap (0/41)' | 'Pomodoro Timer' | 'Analytics & Heatmap';
 
 interface Habit {
@@ -20,10 +16,6 @@ const initialHabits: Habit[] = [
 ];
 
 const MISSION_TARGET_DATE = '2026-12-02';
-
-// ==========================================
-// MAIN PAGE COMPONENT
-// ==========================================
 
 export default function DisciplineHubPro() {
   const [activeTab, setActiveTab] = useState<Tab>('Daily Habits & Scan');
@@ -47,7 +39,6 @@ export default function DisciplineHubPro() {
     localStorage.setItem('dh_habits', JSON.stringify(habits));
   }, [habits]);
 
-  // --- Calculations ---
   const todayHabits = habits.filter(h => h.completed[currentDate]);
   const completionPercent = habits.length > 0 ? Math.round((todayHabits.length / habits.length) * 100) : 0;
   const grade = completionPercent >= 90 ? 'A' : completionPercent >= 80 ? 'B' : completionPercent >= 70 ? 'C' : completionPercent >= 60 ? 'D' : 'F';
@@ -55,7 +46,6 @@ export default function DisciplineHubPro() {
   const timeDifference = new Date(MISSION_TARGET_DATE).getTime() - new Date().getTime();
   const daysRemaining = Math.max(0, Math.ceil(timeDifference / (1000 * 3600 * 24)));
 
-  // --- Handlers ---
   const toggleHabit = (id: string) => {
     setHabits(prevHabits =>
       prevHabits.map(h =>
@@ -89,19 +79,20 @@ export default function DisciplineHubPro() {
     localStorage.setItem(`dh_reflection_${currentDate}`, value);
   };
 
-  // --- Icon Helper ---
+  // Explicit width/height on SVGs to prevent blowup bugs
   const renderIcon = (name: string) => {
+    const attr = { width: 18, height: 18, style: { minWidth: 18, minHeight: 18 } };
     switch (name) {
-      case 'Shield': return <svg className="w-5 h-5 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.059A11.955 11.955 0 012.944 12c0 3.346 1.432 6.357 3.708 8.456a11.955 11.955 0 008.618 3.059A11.955 11.955 0 0021.056 12c0-3.346-1.432-6.357-3.708-8.456z"></path></svg>;
-      case 'Book': return <svg className="w-5 h-5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>;
-      case 'List': return <svg className="w-5 h-5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>;
-      case 'SQL': return <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>;
-      case 'Clock': return <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>;
-      case 'Chart': return <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>;
-      case 'Calendar': return <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>;
-      case 'Download': return <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>;
-      case 'Camera': return <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>;
-      case 'Plus': return <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 4v16m8-8H4"></path></svg>;
+      case 'Shield': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.059A11.955 11.955 0 012.944 12c0 3.346 1.432 6.357 3.708 8.456a11.955 11.955 0 008.618 3.059A11.955 11.955 0 0021.056 12c0-3.346-1.432-6.357-3.708-8.456z"></path></svg>;
+      case 'Book': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>;
+      case 'List': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>;
+      case 'SQL': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>;
+      case 'Clock': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>;
+      case 'Chart': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>;
+      case 'Calendar': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>;
+      case 'Download': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>;
+      case 'Camera': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>;
+      case 'Plus': return <svg {...attr} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 4v16m8-8H4"></path></svg>;
       default: return null;
     }
   };
@@ -111,51 +102,51 @@ export default function DisciplineHubPro() {
     : habits.filter(h => h.category === filterCategory);
 
   return (
-    <main className="min-h-screen bg-[#020617] text-slate-100 p-4 md:p-8 font-sans">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div style={{ backgroundColor: '#020617', color: '#f8fafc', minHeight: '100vh', padding: '24px', fontFamily: 'sans-serif' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
         {/* MISSION COUNTDOWN BANNER */}
-        <section className="bg-[#0f172a] border border-slate-800/60 rounded-3xl p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 shadow-2xl">
-          <div className="flex items-center gap-4">
-            <div className="bg-[#1e293b] p-3 rounded-2xl">{renderIcon('Shield')}</div>
+        <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '20px', padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            <div style={{ backgroundColor: '#1e293b', padding: '12px', borderRadius: '14px', display: 'flex' }}>{renderIcon('Shield')}</div>
             <div>
-              <p className="text-xs font-semibold tracking-wider text-indigo-400 uppercase">MISSION COUNTDOWN TARGET</p>
-              <p className="text-xl font-black tracking-tight text-slate-50 mt-0.5">{daysRemaining} Days remaining until target date</p>
+              <p style={{ fontSize: '11px', fontWeight: '700', color: '#818cf8', letterSpacing: '0.05em', margin: 0 }}>MISSION COUNTDOWN TARGET</p>
+              <p style={{ fontSize: '18px', fontWeight: '900', color: '#f8fafc', margin: '4px 0 0 0' }}>{daysRemaining} Days remaining until target date</p>
             </div>
           </div>
-          <button className="bg-[#1e293b] border border-slate-700/60 text-slate-200 text-xs px-4 py-2.5 rounded-xl font-medium flex items-center gap-2 hover:bg-slate-700 transition whitespace-nowrap">
+          <button style={{ backgroundColor: '#1e293b', border: '1px solid #334155', color: '#cbd5e1', fontSize: '12px', padding: '10px 16px', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
             {renderIcon('Calendar')}
             Change Target Date ({MISSION_TARGET_DATE})
           </button>
-        </section>
+        </div>
 
         {/* QUOTE CARD */}
-        <section className="bg-[#161b2e] rounded-2xl p-5 border border-slate-800/70 italic text-slate-300 text-sm relative before:content-['“'] before:absolute before:-left-2 before:top-1 before:text-5xl before:text-slate-700 before:opacity-50">
+        <div style={{ backgroundColor: '#161b2e', borderRadius: '16px', padding: '16px 20px', border: '1px solid #1e293b', fontStyle: 'italic', color: '#cbd5e1', fontSize: '14px' }}>
           "Your future self is built in the hours you spend alone working in silence."
-        </section>
+        </div>
 
         {/* MAIN DASHBOARD HEADER */}
-        <header className="bg-[#0f172a] border border-slate-800/60 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6 shadow-inner">
-          <div className="flex items-center gap-5">
-            <div className="bg-[#064e3b] border border-[#059669]/50 p-4 rounded-3xl">{renderIcon('Book')}</div>
+        <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '20px', padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ backgroundColor: '#064e3b', border: '1px solid #059669', padding: '14px', borderRadius: '16px', display: 'flex' }}>{renderIcon('Book')}</div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-[#34d399]">Discipline & Habit Hub Pro</h1>
-              <p className="text-slate-400 text-xs md:text-sm mt-1">Uncompromising focus, smart tracking, and granular SQL mastery.</p>
+              <h1 style={{ fontSize: '24px', fontWeight: '800', color: '#34d399', margin: 0 }}>Discipline & Habit Hub Pro</h1>
+              <p style={{ fontSize: '13px', color: '#94a3b8', margin: '4px 0 0 0' }}>Uncompromising focus, smart tracking, and granular SQL mastery.</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="bg-[#1e293b] border border-slate-700/60 text-slate-200 text-xs px-4 py-2.5 rounded-2xl font-medium flex items-center gap-2">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', color: '#f8fafc', fontSize: '12px', padding: '10px 14px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               {renderIcon('Calendar')}
               {currentDate.split('-').reverse().join('-')}
             </div>
-            <button className="bg-[#1e293b] border border-slate-700/60 p-3 rounded-2xl hover:bg-slate-700 transition">
+            <button style={{ backgroundColor: '#1e293b', border: '1px solid #334155', padding: '10px', borderRadius: '12px', cursor: 'pointer', display: 'flex' }}>
               {renderIcon('Download')}
             </button>
           </div>
-        </header>
+        </div>
 
         {/* TABS NAVIGATION */}
-        <nav className="bg-[#0f172a] border border-slate-800/60 p-2 rounded-2xl flex flex-wrap gap-2">
+        <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', padding: '8px', borderRadius: '16px', display: 'flex', gap: '8px' }}>
           {[
             { name: 'Daily Habits & Scan', icon: 'List' },
             { name: 'SQL Roadmap (0/41)', icon: 'SQL' },
@@ -165,101 +156,94 @@ export default function DisciplineHubPro() {
             <button
               key={tab.name}
               onClick={() => setActiveTab(tab.name as Tab)}
-              className={`flex items-center gap-2 px-4 py-3 rounded-xl text-xs font-semibold transition ${
-                activeTab === tab.name
-                  ? 'bg-[#064e3b] text-[#34d399] border border-[#059669]/40 shadow-lg'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-[#1e293b]/50'
-              }`}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 16px',
+                borderRadius: '10px',
+                fontSize: '12px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                border: activeTab === tab.name ? '1px solid #059669' : '1px solid transparent',
+                backgroundColor: activeTab === tab.name ? '#064e3b' : 'transparent',
+                color: activeTab === tab.name ? '#34d399' : '#94a3b8',
+              }}
             >
               {renderIcon(tab.icon)}
               {tab.name}
             </button>
           ))}
-        </nav>
+        </div>
 
         {/* TAB CONTENT: DAILY HABITS & SCAN */}
         {activeTab === 'Daily Habits & Scan' && (
-          <div className="space-y-6">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
-            {/* COMPLETION RATE PROGRESS BAR */}
-            <section className="bg-[#0f172a] border border-slate-800/60 rounded-3xl p-6 space-y-4 shadow-xl">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
+            {/* COMPLETION RATE */}
+            <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '20px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   {renderIcon('List')}
-                  <h2 className="text-sm font-bold text-slate-200">Today's Completion Rate</h2>
+                  <h2 style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc', margin: 0 }}>Today's Completion Rate</h2>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className={`text-xs font-black px-2.5 py-1 rounded-lg border ${
-                    grade === 'A' ? 'bg-emerald-950 border-emerald-800 text-emerald-300' :
-                    grade === 'B' ? 'bg-sky-950 border-sky-800 text-sky-300' :
-                    grade === 'C' ? 'bg-amber-950 border-amber-800 text-amber-300' :
-                    'bg-red-950 border-red-800 text-red-300'
-                  }`}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '800', padding: '3px 8px', borderRadius: '6px', backgroundColor: '#451a03', color: '#fde047', border: '1px solid #713f12' }}>
                     GRADE: {grade}
                   </span>
-                  <span className="text-sm font-black text-emerald-400">{completionPercent}%</span>
+                  <span style={{ fontSize: '14px', fontWeight: '900', color: '#34d399' }}>{completionPercent}%</span>
                 </div>
               </div>
-
-              {/* Progress Bar Container */}
-              <div className="w-full bg-[#1e293b] h-3 rounded-full overflow-hidden p-0.5 border border-slate-800">
-                <div 
-                  className="bg-gradient-to-r from-emerald-600 to-teal-400 h-full rounded-full transition-all duration-500"
-                  style={{ width: `${completionPercent}%` }}
-                ></div>
+              <div style={{ width: '100%', backgroundColor: '#1e293b', height: '10px', borderRadius: '5px', overflow: 'hidden' }}>
+                <div style={{ width: `${completionPercent}%`, backgroundColor: '#34d399', height: '100%', transition: 'width 0.3s ease' }}></div>
               </div>
-
-              <p className="text-[11px] text-slate-400 text-right">
+              <p style={{ fontSize: '11px', color: '#94a3b8', textAlign: 'right', margin: 0 }}>
                 {todayHabits.length} of {habits.length} habits completed for {currentDate}
               </p>
-            </section>
+            </div>
 
-            {/* DAILY REFLECTION & FOCUS LOG */}
-            <section className="bg-[#0f172a] border border-slate-800/60 rounded-3xl p-6 space-y-3 shadow-xl">
-              <div className="flex items-center gap-2">
+            {/* DAILY REFLECTION */}
+            <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '20px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 {renderIcon('Book')}
-                <h2 className="text-sm font-bold text-slate-200">Daily Reflection & Focus Log ({currentDate})</h2>
+                <h2 style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc', margin: 0 }}>Daily Reflection & Focus Log ({currentDate})</h2>
               </div>
               <textarea
                 rows={3}
                 value={reflection}
                 onChange={(e) => handleReflectionChange(e.target.value)}
                 placeholder="Log your deep work wins or distractions conquered today..."
-                className="w-full bg-[#161b2e] border border-slate-800 rounded-2xl p-4 text-xs text-slate-200 focus:outline-none focus:border-emerald-500/50 resize-none"
+                style={{ width: '100%', backgroundColor: '#161b2e', border: '1px solid #334155', borderRadius: '12px', padding: '12px', fontSize: '12px', color: '#f8fafc', resize: 'none', outline: 'none', boxSizing: 'border-box' }}
               />
-            </section>
+            </div>
 
             {/* DAILY TASK BOARD */}
-            <section className="bg-[#0f172a] border border-slate-800/60 rounded-3xl p-6 space-y-5 shadow-xl">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <h2 className="text-sm font-bold text-slate-200">Daily Task Board</h2>
-                
-                <div className="flex flex-wrap items-center gap-2">
-                  {/* Category filters */}
-                  <div className="bg-[#161b2e] border border-slate-800 p-1 rounded-xl flex gap-1">
+            <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '20px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                <h2 style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc', margin: 0 }}>Daily Task Board</h2>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <div style={{ backgroundColor: '#161b2e', border: '1px solid #334155', padding: '4px', borderRadius: '10px', display: 'flex', gap: '4px' }}>
                     {['All', 'Health', 'Productivity', 'Mindset', 'Habits'].map(cat => (
                       <button
                         key={cat}
                         onClick={() => setFilterCategory(cat)}
-                        className={`text-[10px] font-medium px-2.5 py-1 rounded-lg transition ${
-                          filterCategory === cat ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-200'
-                        }`}
+                        style={{
+                          fontSize: '11px',
+                          padding: '4px 8px',
+                          borderRadius: '6px',
+                          border: 'none',
+                          cursor: 'pointer',
+                          backgroundColor: filterCategory === cat ? '#334155' : 'transparent',
+                          color: filterCategory === cat ? '#f8fafc' : '#94a3b8'
+                        }}
                       >
                         {cat}
                       </button>
                     ))}
                   </div>
-
-                  {/* Scan Note Photo Button */}
-                  <button className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3.5 py-2 rounded-xl font-medium flex items-center gap-2 transition shadow">
-                    {renderIcon('Camera')}
-                    Scan Note Photo
-                  </button>
-
-                  {/* New Activity Button */}
                   <button 
                     onClick={() => setShowAddModal(true)}
-                    className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3.5 py-2 rounded-xl font-medium flex items-center gap-2 transition shadow"
+                    style={{ backgroundColor: '#059669', color: '#fff', border: 'none', fontSize: '12px', padding: '8px 12px', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600' }}
                   >
                     {renderIcon('Plus')}
                     New Activity
@@ -267,77 +251,74 @@ export default function DisciplineHubPro() {
                 </div>
               </div>
 
-              {/* Add Habit Inline Form Modal */}
               {showAddModal && (
-                <form onSubmit={handleAddHabit} className="bg-[#161b2e] border border-slate-700/70 p-4 rounded-2xl flex flex-col sm:flex-row gap-3">
+                <form onSubmit={handleAddHabit} style={{ backgroundColor: '#161b2e', border: '1px solid #334155', padding: '12px', borderRadius: '12px', display: 'flex', gap: '8px' }}>
                   <input
                     type="text"
-                    placeholder="Enter activity title (e.g., Read 10 pages)..."
+                    placeholder="Enter activity title..."
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
-                    className="flex-1 bg-[#0f172a] border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 outline-none"
+                    style={{ flex: 1, backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px', padding: '8px', fontSize: '12px', color: '#fff', outline: 'none' }}
                     autoFocus
                   />
                   <select
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value as any)}
-                    className="bg-[#0f172a] border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 outline-none"
+                    style={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px', padding: '8px', fontSize: '12px', color: '#fff', outline: 'none' }}
                   >
                     <option value="Productivity">Productivity</option>
                     <option value="Health">Health</option>
                     <option value="Mindset">Mindset</option>
                     <option value="Habits">Habits</option>
                   </select>
-                  <div className="flex gap-2">
-                    <button type="submit" className="bg-emerald-600 text-white text-xs px-4 py-2 rounded-xl font-medium">Add</button>
-                    <button type="button" onClick={() => setShowAddModal(false)} className="bg-slate-800 text-slate-300 text-xs px-3 py-2 rounded-xl">Cancel</button>
-                  </div>
+                  <button type="submit" style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer', fontWeight: '600' }}>Add</button>
+                  <button type="button" onClick={() => setShowAddModal(false)} style={{ backgroundColor: '#334155', color: '#fff', border: 'none', padding: '8px 10px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer' }}>Cancel</button>
                 </form>
               )}
 
-              {/* Habit List */}
-              <div className="space-y-3">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {filteredHabits.length === 0 ? (
-                  <p className="text-xs text-slate-500 text-center py-8">No tasks found in this category.</p>
+                  <p style={{ fontSize: '12px', color: '#64748b', textAlign: 'center', padding: '20px' }}>No tasks found in this category.</p>
                 ) : (
                   filteredHabits.map(habit => {
                     const isCompleted = !!habit.completed[currentDate];
                     return (
                       <div 
                         key={habit.id}
-                        className={`flex items-center justify-between p-4 rounded-2xl border transition ${
-                          isCompleted 
-                            ? 'bg-emerald-950/20 border-emerald-800/40' 
-                            : 'bg-[#161b2e] border-slate-800/80 hover:border-slate-700'
-                        }`}
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          padding: '12px 16px',
+                          borderRadius: '12px',
+                          border: isCompleted ? '1px solid #065f46' : '1px solid #1e293b',
+                          backgroundColor: isCompleted ? '#064e3b33' : '#161b2e'
+                        }}
                       >
                         <div 
                           onClick={() => toggleHabit(habit.id)}
-                          className="flex items-center gap-3.5 cursor-pointer flex-1"
+                          style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', flex: 1 }}
                         >
-                          <div className={`w-5 h-5 rounded-lg flex items-center justify-center border text-xs font-bold transition ${
-                            isCompleted ? 'bg-emerald-500 border-emerald-400 text-slate-950' : 'border-slate-600 bg-slate-900 text-transparent'
-                          }`}>
+                          <div style={{
+                            width: '20px', height: '20px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 'bold',
+                            border: isCompleted ? '1px solid #34d399' : '1px solid #475569',
+                            backgroundColor: isCompleted ? '#34d399' : '#0f172a',
+                            color: isCompleted ? '#020617' : 'transparent'
+                          }}>
                             ✓
                           </div>
                           <div>
-                            <span className={`text-xs font-medium block ${isCompleted ? 'text-emerald-300 line-through' : 'text-slate-200'}`}>
+                            <span style={{ fontSize: '12px', fontWeight: '500', display: 'block', color: isCompleted ? '#34d399' : '#f8fafc', textDecoration: isCompleted ? 'line-through' : 'none' }}>
                               {habit.title}
                             </span>
-                            <span className={`text-[10px] inline-block px-2 py-0.5 rounded-md mt-1 border ${
-                              habit.category === 'Health' ? 'bg-red-950/50 text-red-300 border-red-900' :
-                              habit.category === 'Productivity' ? 'bg-sky-950/50 text-sky-300 border-sky-900' :
-                              habit.category === 'Mindset' ? 'bg-purple-950/50 text-purple-300 border-purple-900' :
-                              'bg-emerald-950/50 text-emerald-300 border-emerald-900'
-                            }`}>
+                            <span style={{ fontSize: '10px', padding: '2px 6px', borderRadius: '4px', marginTop: '4px', display: 'inline-block', backgroundColor: '#1e293b', color: '#94a3b8' }}>
                               {habit.category}
                             </span>
                           </div>
                         </div>
                         <button 
                           onClick={() => handleDeleteHabit(habit.id)}
-                          className="text-slate-500 hover:text-red-400 p-2 transition text-xs"
-                          title="Delete Habit"
+                          style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '14px' }}
                         >
                           ✕
                         </button>
@@ -346,20 +327,19 @@ export default function DisciplineHubPro() {
                   })
                 )}
               </div>
-            </section>
+            </div>
 
           </div>
         )}
 
-        {/* TAB CONTENT: PLACEHOLDERS FOR OTHER TABS */}
         {activeTab !== 'Daily Habits & Scan' && (
-          <div className="bg-[#0f172a] border border-slate-800/60 rounded-3xl p-12 text-center space-y-3">
-            <h3 className="text-base font-bold text-slate-300">{activeTab} Module</h3>
-            <p className="text-xs text-slate-500">This section is synced and fully prepped for your roadmap data.</p>
+          <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '20px', padding: '40px', textAlign: 'center' }}>
+            <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#cbd5e1', margin: 0 }}>{activeTab} Module</h3>
+            <p style={{ fontSize: '12px', color: '#64748b', marginTop: '6px' }}>This section is synced and prepped.</p>
           </div>
         )}
 
       </div>
-    </main>
+    </div>
   );
 }
