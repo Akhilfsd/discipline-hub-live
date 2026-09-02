@@ -2,376 +2,154 @@
 
 import React, { useState, useEffect } from 'react';
 
-interface Activity {
+// ==========================================
+// TYPES & CONSTANTS
+// ==========================================
+
+type Tab = 'Daily Habits & Scan' | 'SQL Roadmap (0/41)' | 'Pomodoro Timer' | 'Analytics & Heatmap';
+
+interface Habit {
   id: string;
   title: string;
-  category: string;
-  frequency: string;
+  category: 'Health' | 'Productivity' | 'Mindset' | 'Habits';
+  completed: { [date: string]: boolean }; // Date string format: YYYY-MM-DD
 }
 
-interface DailyLog {
-  id: string;
-  date: string;
-  completed: boolean;
-  activityId: string;
-}
-
-interface SqlTopic {
-  id: string;
-  module: string;
-  title: string;
-  subtopics: string[];
-  completedSubtopics: string[];
-}
-
-const ACTIVITIES_KEY = 'disc_hub_acts_v3';
-const LOGS_KEY = 'disc_hub_logs_v3';
-const SQL_KEY = 'disc_hub_sql_v3';
-const TARGET_KEY = 'disc_hub_target_v3';
-
-const DEFAULT_SQL_TOPICS: Omit<SqlTopic, 'completedSubtopics'>[] = [
-  {
-    id: 'm1',
-    module: 'Fundamentals',
-    title: 'Basic Queries & Filtering',
-    subtopics: [
-      'SELECT statements & retrieving columns',
-      'Using aliases (AS keyword)',
-      'Filtering rows with WHERE clause',
-      'Combining conditions with AND, OR, NOT',
-      'Using IN, NOT IN, and BETWEEN',
-      'Pattern matching with LIKE',
-      'Handling NULL values',
-      'Removing duplicates with DISTINCT'
-    ]
-  },
-  {
-    id: 'm2',
-    module: 'Aggregations',
-    title: 'Aggregate Functions & Grouping',
-    subtopics: [
-      'Counting records with COUNT()',
-      'Calculating SUM() and AVG()',
-      'Finding MIN() and MAX()',
-      'Grouping data with GROUP BY',
-      'Filtering groups with HAVING',
-      'Conditional logic with CASE WHEN'
-    ]
-  },
-  {
-    id: 'm3',
-    module: 'Joins',
-    title: 'Table Relationships & Joins',
-    subtopics: [
-      'Primary Keys & Foreign Keys',
-      'Inner Joins',
-      'Left & Right Outer Joins',
-      'Full Outer Joins & Self Joins',
-      'Set Operations (UNION, INTERSECT)'
-    ]
-  },
-  {
-    id: 'm4',
-    module: 'Advanced',
-    title: 'Subqueries & Window Functions',
-    subtopics: [
-      'Scalar & Correlated Subqueries',
-      'Common Table Expressions (CTEs)',
-      'Window Functions (OVER, PARTITION BY)',
-      'Ranking (ROW_NUMBER, RANK, DENSE_RANK)',
-      'Value analysis (LAG, LEAD)'
-    ]
-  }
+const initialHabits: Habit[] = [
+  { id: 'h1', title: 'power bi lecture', category: 'Productivity', completed: {} },
 ];
 
-export default function Page() {
-  const [activeTab, setActiveTab] = useState<'habits' | 'sql' | 'matrix'>('habits');
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [logs, setLogs] = useState<DailyLog[]>([]);
+const MISSION_TARGET_DATE = '2026-12-02';
+
+// ==========================================
+// MAIN PAGE COMPONENT
+// ==========================================
+
+export default function DisciplineHubPro() {
+  const [activeTab, setActiveTab] = useState<Tab>('Daily Habits & Scan');
   const [currentDate, setCurrentDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  
-  const [title, setTitle] = useState('');
-  const [category, setCategory] = useState('Productivity');
-  const [showAddForm, setShowAddForm] = useState(false);
-  
-  const [targetDate, setTargetDate] = useState<string>('2026-12-31');
-  const [sqlTopics, setSqlTopics] = useState<SqlTopic[]>([]);
-  const [note, setNote] = useState('');
+  const [habits, setHabits] = useState<Habit[]>(initialHabits);
+  const [reflection, setReflection] = useState<string>('');
 
   useEffect(() => {
-    const savedActs = localStorage.getItem(ACTIVITIES_KEY);
-    if (savedActs) setActivities(JSON.parse(savedActs));
-
-    const savedLogs = localStorage.getItem(LOGS_KEY);
-    if (savedLogs) setLogs(JSON.parse(savedLogs));
-
-    const savedSql = localStorage.getItem(SQL_KEY);
-    if (savedSql) {
-      setSqlTopics(JSON.parse(savedSql));
-    } else {
-      const initial = DEFAULT_SQL_TOPICS.map(t => ({ ...t, completedSubtopics: [] }));
-      setSqlTopics(initial);
-      localStorage.setItem(SQL_KEY, JSON.stringify(initial));
-    }
-
-    const savedTarget = localStorage.getItem(TARGET_KEY);
-    if (savedTarget) setTargetDate(savedTarget);
-
-    const savedNote = localStorage.getItem(`note_${currentDate}`);
-    if (savedNote) setNote(savedNote);
-    else setNote('');
+    // Load habits from local storage on mount
+    const savedHabits = localStorage.getItem('dh_habits');
+    if (savedHabits) setHabits(JSON.parse(savedHabits));
+    
+    const savedReflection = localStorage.getItem(`dh_reflection_${currentDate}`);
+    if (savedReflection) setReflection(savedReflection);
   }, [currentDate]);
 
-  function saveActivities(newActs: Activity[]) {
-    setActivities(newActs);
-    localStorage.setItem(ACTIVITIES_KEY, JSON.stringify(newActs));
-  }
+  useEffect(() => {
+    // Save habits to local storage on change
+    localStorage.setItem('dh_habits', JSON.stringify(habits));
+  }, [habits]);
 
-  function saveLogs(newLogs: DailyLog[]) {
-    setLogs(newLogs);
-    localStorage.setItem(LOGS_KEY, JSON.stringify(newLogs));
-  }
+  // --- Calculations ---
+  const todayHabits = habits.filter(h => h.completed[currentDate]);
+  const completionPercent = habits.length > 0 ? Math.round((todayHabits.length / habits.length) * 100) : 0;
+  const grade = completionPercent >= 90 ? 'A' : completionPercent >= 80 ? 'B' : completionPercent >= 70 ? 'C' : completionPercent >= 60 ? 'D' : 'F';
 
-  function handleAddActivity(e: React.FormEvent) {
-    e.preventDefault();
-    if (!title.trim()) return;
-    const newAct: Activity = {
-      id: Math.random().toString(36).substring(2, 9),
-      title: title.trim(),
-      category,
-      frequency: 'Daily'
-    };
-    saveActivities([...activities, newAct]);
-    setTitle('');
-    setShowAddForm(false);
-  }
+  const timeDifference = new Date(MISSION_TARGET_DATE).getTime() - new Date().getTime();
+  const daysRemaining = Math.max(0, Math.ceil(timeDifference / (1000 * 3600 * 24)));
 
-  function handleDeleteActivity(id: string) {
-    saveActivities(activities.filter(a => a.id !== id));
-    saveLogs(logs.filter(l => l.activityId !== id));
-  }
+  // --- Handlers ---
+  const toggleHabit = (id: string) => {
+    setHabits(prevHabits =>
+      prevHabits.map(h =>
+        h.id === id
+          ? { ...h, completed: { ...h.completed, [currentDate]: !h.completed[currentDate] } }
+          : h
+      )
+    );
+  };
 
-  function toggleLog(activityId: string) {
-    const idx = logs.findIndex(l => l.activityId === activityId && l.date === currentDate);
-    let updated = [...logs];
-    if (idx > -1) {
-      updated[idx].completed = !updated[idx].completed;
-    } else {
-      updated.push({ id: Math.random().toString(36).substring(2, 9), activityId, date: currentDate, completed: true });
+  const handleReflectionChange = (value: string) => {
+    setReflection(value);
+    localStorage.setItem(`dh_reflection_${currentDate}`, value);
+  };
+
+  // --- Render Helpers ---
+  const renderIcon = (name: string) => {
+    switch (name) {
+      case 'Shield': return <svg className="w-5 h-5 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.059A11.955 11.955 0 012.944 12c0 3.346 1.432 6.357 3.708 8.456a11.955 11.955 0 008.618 3.059A11.955 11.955 0 0021.056 12c0-3.346-1.432-6.357-3.708-8.456z"></path></svg>;
+      case 'Book': return <svg className="w-5 h-5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>;
+      case 'List': return <svg className="w-5 h-5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>;
+      case 'SQL': return <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>;
+      case 'Clock': return <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>;
+      case 'Chart': return <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>;
+      case 'Calendar': return <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>;
+      case 'Download': return <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>;
+      case 'Camera': return <svg className="w-4 h-4 text-gray-950" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>;
+      case 'Plus': return <svg className="w-4 h-4 text-gray-950" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 4v16m8-8H4"></path></svg>;
+      default: return null;
     }
-    saveLogs(updated);
-  }
+  };
 
-  function toggleSql(topicId: string, sub: string) {
-    const updated = sqlTopics.map(t => {
-      if (t.id === topicId) {
-        const exists = t.completedSubtopics.includes(sub);
-        const newSubs = exists ? t.completedSubtopics.filter(s => s !== sub) : [...t.completedSubtopics, sub];
-        return { ...t, completedSubtopics: newSubs };
-      }
-      return t;
-    });
-    setSqlTopics(updated);
-    localStorage.setItem(SQL_KEY, JSON.stringify(updated));
-  }
+  const categoryColors: { [key: string]: string } = {
+    Health: 'bg-red-900/40 text-red-300 border-red-800',
+    Productivity: 'bg-sky-900/40 text-sky-300 border-sky-800',
+    Mindset: 'bg-purple-900/40 text-purple-300 border-purple-800',
+    Habits: 'bg-emerald-900/40 text-emerald-300 border-emerald-800',
+  };
 
-  const todayLogs = logs.filter(l => l.date === currentDate && l.completed);
-  const completionRate = activities.length > 0 ? Math.round((todayLogs.length / activities.length) * 100) : 0;
-
-  let totalSubs = 0;
-  let doneSubs = 0;
-  sqlTopics.forEach(t => {
-    totalSubs += t.subtopics.length;
-    doneSubs += t.completedSubtopics.length;
-  });
-  const sqlRate = totalSubs > 0 ? Math.round((doneSubs / totalSubs) * 100) : 0;
-
-  const daysLeft = Math.max(0, Math.ceil((new Date(targetDate).getTime() - new Date().setHours(0,0,0,0)) / (1000 * 60 * 60 * 24)));
-  const pastDays = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (6 - i));
-    return d.toISOString().split('T')[0];
-  });
+  // ==========================================
+  // RENDER RETURN
+  // ==========================================
 
   return (
-    <div style={{ backgroundColor: '#020617', color: '#f8fafc', minHeight: '100vh', padding: '24px 16px', fontFamily: 'system-ui, sans-serif' }}>
-      <div style={{ maxWidth: '680px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <main className="min-h-screen bg-[#020617] text-slate-100 p-4 md:p-8 font-sans">
+      <div className="max-w-7xl mx-auto space-y-8">
 
-        {/* HEADER */}
-        <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)' }}>
-          <div>
-            <h1 style={{ fontSize: '18px', fontWeight: 'bold', color: '#34d399', margin: 0 }}>⚡ Discipline & Habit Hub Pro</h1>
-            <p style={{ fontSize: '12px', color: '#94a3b8', margin: '4px 0 0 0' }}>Uncompromising focus, clean execution.</p>
-          </div>
-          <input 
-            type="date" 
-            value={currentDate} 
-            onChange={e => setCurrentDate(e.target.value)}
-            style={{ background: '#1e293b', border: '1px solid #334155', color: '#f8fafc', fontSize: '12px', padding: '8px 12px', borderRadius: '10px', outline: 'none' }}
-          />
-        </div>
-
-        {/* STATS */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-          <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        {/* MISSION COUNTDOWN BANNER */}
+        <section className="bg-[#0f172a] border border-slate-800/60 rounded-3xl p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 shadow-2xl shadow-black/20">
+          <div className="flex items-center gap-4">
+            <div className="bg-[#1e293b] p-3 rounded-2xl">{renderIcon('Shield')}</div>
             <div>
-              <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#818cf8', textTransform: 'uppercase' }}>Target Countdown</span>
-              <div style={{ fontSize: '20px', fontWeight: '900', marginTop: '2px' }}>{daysLeft} Days</div>
+              <p className="text-xs font-semibold tracking-wider text-indigo-400 uppercase">MISSION COUNTDOWN TARGET</p>
+              <p className="text-2xl font-black tracking-tight text-slate-50 mt-0.5">{daysRemaining} Days remaining until target date</p>
             </div>
-            <input 
-              type="date" 
-              value={targetDate} 
-              onChange={e => { setTargetDate(e.target.value); localStorage.setItem(TARGET_KEY, e.target.value); }}
-              style={{ background: '#1e293b', border: '1px solid #334155', color: '#cbd5e1', fontSize: '10px', padding: '4px', borderRadius: '6px' }}
-            />
           </div>
+          <button className="bg-[#1e293b] border border-slate-700/60 text-slate-200 text-xs px-4 py-2 rounded-xl font-medium flex items-center gap-2 hover:bg-slate-700 transition whitespace-nowrap">
+            {renderIcon('Calendar')}
+            Change Target Date ({MISSION_TARGET_DATE})
+          </button>
+        </section>
 
-          <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        {/* QUOTE CARD */}
+        <section className="bg-[#161b2e] rounded-2xl p-6 border border-slate-800/70 italic text-slate-300 text-base relative before:content-['“'] before:absolute before:-left-2 before:top-1 before:text-6xl before:text-slate-700 before:opacity-50">
+          "Your future self is built in the hours you spend alone working in silence."
+        </section>
+
+        {/* MAIN DASHBOARD HEADER */}
+        <header className="bg-[#0f172a] border border-slate-800/60 rounded-3xl p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6 shadow-inner shadow-black/10">
+          <div className="flex items-center gap-6">
+            <div className="bg-[#064e3b] border border-[#059669]/50 p-4 rounded-3xl">{renderIcon('Book')}</div>
             <div>
-              <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#34d399', textTransform: 'uppercase' }}>Today's Progress</span>
-              <div style={{ fontSize: '20px', fontWeight: '900', marginTop: '2px' }}>{completionRate}%</div>
-            </div>
-            <div style={{ fontSize: '11px', background: 'rgba(6, 78, 59, 0.6)', border: '1px solid #065f46', color: '#34d399', padding: '4px 8px', borderRadius: '8px', fontWeight: 'bold' }}>
-              {todayLogs.length}/{activities.length} Done
+              <h1 className="text-4xl font-extrabold tracking-tighter text-[#34d399]">Discipline & Habit Hub Pro</h1>
+              <p className="text-slate-400 text-base mt-1">Uncompromising focus, smart tracking, and granular SQL mastery.</p>
             </div>
           </div>
-        </div>
-
-        {/* TABS */}
-        <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '6px', display: 'flex', gap: '6px' }}>
-          <button onClick={() => setActiveTab('habits')} style={{ flex: 1, padding: '10px', fontSize: '12px', fontWeight: 'bold', borderRadius: '10px', border: 'none', background: activeTab === 'habits' ? '#059669' : 'transparent', color: activeTab === 'habits' ? '#fff' : '#94a3b8', cursor: 'pointer' }}>Daily Habits</button>
-          <button onClick={() => setActiveTab('sql')} style={{ flex: 1, padding: '10px', fontSize: '12px', fontWeight: 'bold', borderRadius: '10px', border: 'none', background: activeTab === 'sql' ? '#059669' : 'transparent', color: activeTab === 'sql' ? '#fff' : '#94a3b8', cursor: 'pointer' }}>SQL Roadmap ({sqlRate}%)</button>
-          <button onClick={() => setActiveTab('matrix')} style={{ flex: 1, padding: '10px', fontSize: '12px', fontWeight: 'bold', borderRadius: '10px', border: 'none', background: activeTab === 'matrix' ? '#059669' : 'transparent', color: activeTab === 'matrix' ? '#fff' : '#94a3b8', cursor: 'pointer' }}>Weekly Matrix</button>
-        </div>
-
-        {/* TAB 1: HABITS */}
-        {activeTab === 'habits' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2 style={{ fontSize: '14px', fontWeight: 'bold', margin: 0 }}>Daily Task Board</h2>
-                <button onClick={() => setShowAddForm(!showAddForm)} style={{ background: '#059669', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>{showAddForm ? 'Cancel' : '+ New Habit'}</button>
-              </div>
-
-              {showAddForm && (
-                <form onSubmit={handleAddActivity} style={{ background: '#1e293b', padding: '12px', borderRadius: '12px', display: 'flex', gap: '8px' }}>
-                  <input type="text" placeholder="Habit title..." value={title} onChange={e => setTitle(e.target.value)} style={{ flex: 1, background: '#0f172a', border: '1px solid #334155', color: '#fff', padding: '8px 12px', borderRadius: '8px', fontSize: '12px', outline: 'none' }} />
-                  <select value={category} onChange={e => setCategory(e.target.value)} style={{ background: '#0f172a', border: '1px solid #334155', color: '#fff', padding: '8px', borderRadius: '8px', fontSize: '12px', outline: 'none' }}>
-                    <option value="Productivity">Productivity</option>
-                    <option value="Health">Health</option>
-                    <option value="Learning">Learning</option>
-                  </select>
-                  <button type="submit" style={{ background: '#059669', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Save</button>
-                </form>
-              )}
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {activities.length === 0 ? (
-                  <p style={{ fontSize: '12px', color: '#64748b', textAlign: 'center', padding: '20px 0', margin: 0 }}>No habits added yet. Click '+ New Habit' to begin.</p>
-                ) : (
-                  activities.map(act => {
-                    const isDone = logs.some(l => l.activityId === act.id && l.date === currentDate && l.completed);
-                    return (
-                      <div key={act.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: isDone ? 'rgba(6, 78, 59, 0.2)' : '#1e293b', border: `1px solid ${isDone ? '#065f46' : '#334155'}`, padding: '12px 16px', borderRadius: '12px' }}>
-                        <div onClick={() => toggleLog(act.id)} style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', flex: 1 }}>
-                          <div style={{ width: '20px', height: '20px', borderRadius: '6px', border: `1px solid ${isDone ? '#34d399' : '#475569'}`, background: isDone ? '#34d399' : '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#020617', fontSize: '11px', fontWeight: 'bold' }}>
-                            {isDone ? '✓' : ''}
-                          </div>
-                          <div>
-                            <div style={{ fontSize: '13px', fontWeight: '500', color: isDone ? '#6ee7b7' : '#f8fafc', textDecoration: isDone ? 'line-through' : 'none' }}>{act.title}</div>
-                            <span style={{ fontSize: '10px', color: '#94a3b8' }}>{act.category}</span>
-                          </div>
-                        </div>
-                        <button onClick={() => handleDeleteActivity(act.id)} style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '14px' }}>✕</button>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
+          <div className="flex items-center gap-3">
+            <div className="bg-[#1e293b] border border-slate-700/60 text-slate-200 text-sm px-5 py-3 rounded-2xl font-medium flex items-center gap-2.5">
+              {renderIcon('Calendar')}
+              {currentDate.split('-').reverse().join('-')}
+              <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
             </div>
-
-            <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#cbd5e1' }}>Daily Focus Note ({currentDate})</label>
-              <textarea 
-                rows={3}
-                value={note}
-                onChange={e => { setNote(e.target.value); localStorage.setItem(`note_${currentDate}`, e.target.value); }}
-                placeholder="Log your deep work wins or distractions conquered..."
-                style={{ width: '100%', background: '#1e293b', border: '1px solid #334155', borderRadius: '12px', padding: '12px', fontSize: '12px', color: '#f8fafc', outline: 'none', resize: 'none', boxSizing: 'border-box' }}
-              />
-            </div>
+            <button className="bg-[#1e293b] border border-slate-700/60 p-3.5 rounded-2xl hover:bg-slate-700 transition">
+              {renderIcon('Download')}
+            </button>
           </div>
-        )}
+        </header>
 
-        {/* TAB 2: SQL ROADMAP */}
-        {activeTab === 'sql' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '12px', fontWeight: 'bold' }}>SQL Mastery Progress</span>
-              <span style={{ fontSize: '12px', fontFamily: 'monospace', color: '#34d399', fontWeight: 'bold' }}>{doneSubs} / {totalSubs} subtopics ({sqlRate}%)</span>
-            </div>
-
-            {sqlTopics.map(topic => (
-              <div key={topic.id} style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1e293b', paddingBottom: '10px' }}>
-                  <h3 style={{ fontSize: '13px', fontWeight: 'bold', margin: 0 }}>{topic.title}</h3>
-                  <span style={{ fontSize: '10px', background: '#1e293b', border: '1px solid #334155', color: '#818cf8', padding: '4px 8px', borderRadius: '6px' }}>{topic.module}</span>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {topic.subtopics.map((sub, idx) => {
-                    const isDone = topic.completedSubtopics.includes(sub);
-                    return (
-                      <div 
-                        key={idx}
-                        onClick={() => toggleSql(topic.id, sub)}
-                        style={{ display: 'flex', alignItems: 'center', gap: '10px', background: isDone ? 'rgba(6, 78, 59, 0.2)' : '#1e293b', border: `1px solid ${isDone ? '#065f46' : '#334155'}`, padding: '10px 14px', borderRadius: '10px', cursor: 'pointer', fontSize: '12px', color: isDone ? '#6ee7b7' : '#cbd5e1' }}
-                      >
-                        <div style={{ width: '16px', height: '16px', borderRadius: '4px', border: `1px solid ${isDone ? '#34d399' : '#475569'}`, background: isDone ? '#34d399' : '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#020617', fontSize: '10px', fontWeight: 'bold' }}>
-                          {isDone ? '✓' : ''}
-                        </div>
-                        <span style={{ textDecoration: isDone ? 'line-through' : 'none' }}>{sub}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* TAB 3: MATRIX */}
-        {activeTab === 'matrix' && (
-          <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', overflowX: 'auto' }}>
-            <h2 style={{ fontSize: '13px', fontWeight: 'bold', margin: 0 }}>Weekly Consistency Matrix (Past 7 Days)</h2>
-            {activities.length === 0 ? (
-              <p style={{ fontSize: '12px', color: '#64748b', textAlign: 'center', padding: '20px 0', margin: 0 }}>No habits recorded yet.</p>
-            ) : (
-              <div style={{ minWidth: '420px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1.5fr repeat(7, 1fr)', gap: '4px', fontSize: '10px', fontWeight: 'bold', color: '#94a3b8', borderBottom: '1px solid #1e293b', paddingBottom: '8px' }}>
-                  <div>Habit</div>
-                  {pastDays.map(d => <div key={d} style={{ textAlign: 'center' }}>{d.slice(5)}</div>)}
-                </div>
-                {activities.map(act => (
-                  <div key={act.id} style={{ display: 'grid', gridTemplateColumns: '1.5fr repeat(7, 1fr)', gap: '4px', alignItems: 'center', fontSize: '11px' }}>
-                    <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#cbd5e1', fontWeight: '500' }}>{act.title}</div>
-                    {pastDays.map(d => {
-                      const logged = logs.some(l => l.activityId === act.id && l.date === d && l.completed);
-                      return (
-                        <div key={d} style={{ display: 'flex', justifyContent: 'center' }}>
-                          <div style={{ width: '22px', height: '22px', borderRadius: '6px', background: logged ? '#34d399' : '#1e293b', color: logged ? '#020617' : '#475569', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 'bold' }}>
-                            {logged ? '✓' : '·'}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-      </div>
-    </div>
-  );
-}
+        {/* TABS NAVIGATION */}
+        <nav className="bg-[#0f172a] border border-slate-800/60 p-2 rounded-2xl flex flex-wrap gap-1.5">
+          {[
+            { name: 'Daily Habits & Scan', icon: 'List' },
+            { name: 'SQL Roadmap (0/41)', icon: 'SQL' },
+            { name: 'Pomodoro Timer', icon: 'Clock' },
+            { name: 'Analytics & Heatmap', icon: 'Chart' },
+          ].map((tab) => (
+            <button
+              key={tab.name}
+              onClick={() => setActiveTab(tab.name as Tab)}
