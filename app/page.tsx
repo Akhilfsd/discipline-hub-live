@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 type Tab = 'Daily Habits & Scan' | 'SQL Roadmap' | 'Pomodoro Timer' | 'Analytics & Heatmap';
 
@@ -115,7 +115,7 @@ const disciplineQuotes = [
   "Small daily disciplines repeated consistently lead to great achievements."
 ];
 
-export default function DisciplineHubProFinal() {
+export default function DisciplineHubUltimate() {
   const [activeTab, setActiveTab] = useState<Tab>('SQL Roadmap');
   const [currentDate, setCurrentDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [targetDate, setTargetDate] = useState<string>('2026-12-02');
@@ -126,6 +126,10 @@ export default function DisciplineHubProFinal() {
   const [selectedSqlTopic, setSelectedSqlTopic] = useState<SqlTopic | null>(null);
 
   const [reflection, setReflection] = useState<string>('');
+  const [scanNotes, setScanNotes] = useState<string>('');
+  const [scannedImages, setScannedImages] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [filterCategory, setFilterCategory] = useState<string>('All');
   const [newTitle, setNewTitle] = useState<string>('');
   const [newCategory, setNewCategory] = useState<'Health' | 'Productivity' | 'Mindset' | 'Habits'>('Productivity');
@@ -138,38 +142,69 @@ export default function DisciplineHubProFinal() {
 
   // Load saved state
   useEffect(() => {
-    const savedHabits = localStorage.getItem('dh_habits_final');
+    const savedHabits = localStorage.getItem('dh_habits_ult');
     if (savedHabits) setHabits(JSON.parse(savedHabits));
 
-    const savedSql = localStorage.getItem('dh_sql_roadmap_final');
+    const savedSql = localStorage.getItem('dh_sql_ult');
     if (savedSql) setSqlRoadmap(JSON.parse(savedSql));
 
-    const savedTarget = localStorage.getItem('dh_target_date_final');
+    const savedTarget = localStorage.getItem('dh_target_ult');
     if (savedTarget) setTargetDate(savedTarget);
   }, []);
 
   useEffect(() => {
-    const savedReflection = localStorage.getItem(`dh_reflection_final_${currentDate}`);
-    setReflection(savedReflection || '');
+    const savedRef = localStorage.getItem(`dh_ref_ult_${currentDate}`);
+    setReflection(savedRef || '');
+
+    const savedScan = localStorage.getItem(`dh_scan_ult_${currentDate}`);
+    setScanNotes(savedScan || '');
+
+    const savedImgs = localStorage.getItem(`dh_imgs_ult_${currentDate}`);
+    if (savedImgs) setScannedImages(JSON.parse(savedImgs));
   }, [currentDate]);
 
   useEffect(() => {
-    localStorage.setItem('dh_habits_final', JSON.stringify(habits));
+    localStorage.setItem('dh_habits_ult', JSON.stringify(habits));
   }, [habits]);
 
   useEffect(() => {
-    localStorage.setItem('dh_sql_roadmap_final', JSON.stringify(sqlRoadmap));
+    localStorage.setItem('dh_sql_ult', JSON.stringify(sqlRoadmap));
   }, [sqlRoadmap]);
 
   const handleTargetDateChange = (newDate: string) => {
     setTargetDate(newDate);
-    localStorage.setItem('dh_target_date_final', newDate);
+    localStorage.setItem('dh_target_ult', newDate);
     setIsEditingTarget(false);
   };
 
   const handleReflectionChange = (val: string) => {
     setReflection(val);
-    localStorage.setItem(`dh_reflection_final_${currentDate}`, val);
+    localStorage.setItem(`dh_ref_ult_${currentDate}`, val);
+  };
+
+  const handleScanNotesChange = (val: string) => {
+    setScanNotes(val);
+    localStorage.setItem(`dh_scan_ult_${currentDate}`, val);
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (uploadEvent) => {
+        if (uploadEvent.target?.result) {
+          const updated = [...scannedImages, uploadEvent.target.result as string];
+          setScannedImages(updated);
+          localStorage.setItem(`dh_imgs_ult_${currentDate}`, JSON.stringify(updated));
+        }
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    const updated = scannedImages.filter((_, i) => i !== index);
+    setScannedImages(updated);
+    localStorage.setItem(`dh_imgs_ult_${currentDate}`, JSON.stringify(updated));
   };
 
   useEffect(() => {
@@ -228,7 +263,6 @@ export default function DisciplineHubProFinal() {
 
   const filteredHabits = filterCategory === 'All' ? habits : habits.filter(h => h.category === filterCategory);
 
-  // Generate heatmap matrix (past 28 days)
   const heatmapDays = Array.from({ length: 28 }).map((_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (27 - i));
@@ -239,12 +273,14 @@ export default function DisciplineHubProFinal() {
     <div style={{ backgroundColor: '#020617', color: '#f8fafc', minHeight: '100vh', width: '100%', padding: '16px', fontFamily: 'sans-serif', boxSizing: 'border-box' }}>
       <div style={{ width: '100%', maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
-        {/* TOP HEADER */}
+        {/* TOP HEADER: MISSION TARGET COUNTDOWN & DATE SELECTOR */}
         <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '14px', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
           <div>
             <h1 style={{ fontSize: '20px', fontWeight: '800', color: '#34d399', margin: 0 }}>Discipline & SQL Mastery Hub</h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-              <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0 }}>Target Date: {daysRemaining} days remaining ({targetDate})</p>
+              <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#fde047', backgroundColor: '#451a03', padding: '2px 6px', borderRadius: '4px' }}>
+                🎯 Target Countdown: {daysRemaining} Days Left ({targetDate})
+              </span>
               {!isEditingTarget ? (
                 <button onClick={() => setIsEditingTarget(true)} style={{ background: 'transparent', border: 'none', color: '#34d399', fontSize: '11px', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>Edit</button>
               ) : (
@@ -258,6 +294,7 @@ export default function DisciplineHubProFinal() {
             </div>
           </div>
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <span style={{ fontSize: '12px', color: '#94a3b8' }}>Active Date:</span>
             <input
               type="date"
               value={currentDate}
@@ -303,13 +340,13 @@ export default function DisciplineHubProFinal() {
           })}
         </div>
 
-        {/* TAB: SQL ROADMAP WITH DETAILED CONTENT */}
+        {/* TAB: SQL ROADMAP */}
         {activeTab === 'SQL Roadmap' && (
           <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '14px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
               <div>
                 <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#34d399', margin: 0 }}>SQL Interview & Practice Modules</h2>
-                <p style={{ fontSize: '12px', color: '#94a3b8', margin: '2px 0 0 0' }}>Click any module card below to view detailed concept notes, important syntax formulae, and practical problems.</p>
+                <p style={{ fontSize: '12px', color: '#94a3b8', margin: '2px 0 0 0' }}>Click any module card below to view detailed concept notes, syntax, and solutions.</p>
               </div>
               <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#818cf8', backgroundColor: '#1e293b', padding: '5px 10px', borderRadius: '6px' }}>
                 Progress: {Math.round((completedSqlCount / sqlRoadmap.length) * 100)}%
@@ -385,13 +422,11 @@ export default function DisciplineHubProFinal() {
                 </button>
               </div>
 
-              {/* Notes */}
               <div style={{ backgroundColor: '#161b2e', border: '1px solid #1e293b', borderRadius: '10px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <h4 style={{ fontSize: '12px', fontWeight: 'bold', color: '#cbd5e1', margin: 0 }}>📖 Concept Notes</h4>
                 <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0, lineHeight: '1.4' }}>{selectedSqlTopic.notes}</p>
               </div>
 
-              {/* Syntax & Formula */}
               <div style={{ backgroundColor: '#161b2e', border: '1px solid #1e293b', borderRadius: '10px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <h4 style={{ fontSize: '12px', fontWeight: 'bold', color: '#cbd5e1', margin: 0 }}>⚡ Important Syntax & Formula</h4>
                 <pre style={{ backgroundColor: '#020617', color: '#34d399', padding: '10px', borderRadius: '6px', fontSize: '11px', overflowX: 'auto', margin: 0, fontFamily: 'monospace' }}>
@@ -399,7 +434,6 @@ export default function DisciplineHubProFinal() {
                 </pre>
               </div>
 
-              {/* Practical Problem & Solution */}
               <div style={{ backgroundColor: '#161b2e', border: '1px solid #1e293b', borderRadius: '10px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <h4 style={{ fontSize: '12px', fontWeight: 'bold', color: '#cbd5e1', margin: 0 }}>💡 Practical Problem</h4>
                 <p style={{ fontSize: '12px', color: '#f8fafc', margin: 0, fontWeight: '600' }}>{selectedSqlTopic.problem}</p>
@@ -430,17 +464,23 @@ export default function DisciplineHubProFinal() {
           </div>
         )}
 
-        {/* TAB: DAILY HABITS & SCAN */}
+        {/* TAB: DAILY HABITS, COMPLETION RATE, SCAN & NOTES */}
         {activeTab === 'Daily Habits & Scan' && (
           <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '14px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-              <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#34d399', margin: 0 }}>Daily Task Board & Completion</h2>
-              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                <span style={{ fontSize: '12px', fontWeight: 'bold', backgroundColor: '#451a03', color: '#fde047', padding: '3px 8px', borderRadius: '6px' }}>Grade: {grade}</span>
-                <span style={{ fontSize: '15px', fontWeight: '900', color: '#34d399' }}>{completionPercent}%</span>
+            
+            {/* TODAY'S COMPLETION RATE HEADER */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', backgroundColor: '#161b2e', padding: '14px 16px', borderRadius: '10px', border: '1px solid #334155' }}>
+              <div>
+                <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#34d399', margin: 0 }}>Today's Completion Rate</h2>
+                <p style={{ fontSize: '11px', color: '#94a3b8', margin: '2px 0 0 0' }}>Date: {currentDate}</p>
+              </div>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <span style={{ fontSize: '12px', fontWeight: 'bold', backgroundColor: '#451a03', color: '#fde047', padding: '4px 10px', borderRadius: '6px' }}>Grade: {grade}</span>
+                <span style={{ fontSize: '18px', fontWeight: '900', color: '#34d399' }}>{completionPercent}%</span>
               </div>
             </div>
 
+            {/* Task Filters & Add Button */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
               <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                 {['All', 'Health', 'Productivity', 'Mindset', 'Habits'].map(cat => (
@@ -490,6 +530,7 @@ export default function DisciplineHubProFinal() {
               </form>
             )}
 
+            {/* Task Checklist */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {filteredHabits.map(habit => {
                 const isCompleted = !!habit.completed[currentDate];
@@ -523,7 +564,6 @@ export default function DisciplineHubProFinal() {
                       <button 
                         onClick={(e) => deleteHabit(habit.id, e)}
                         style={{ background: 'transparent', border: 'none', color: '#ef4444', fontSize: '12px', cursor: 'pointer', padding: '2px' }}
-                        title="Delete task"
                       >
                         ✕
                       </button>
@@ -533,16 +573,65 @@ export default function DisciplineHubProFinal() {
               })}
             </div>
 
-            {/* DAILY REFLECTION NOTE SECTION (Restored Feature) */}
-            <div style={{ backgroundColor: '#161b2e', border: '1px solid #1e293b', borderRadius: '10px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
-              <h3 style={{ fontSize: '13px', fontWeight: 'bold', color: '#cbd5e1', margin: 0 }}>📝 Daily Reflection & Journal ({currentDate})</h3>
-              <textarea
-                placeholder="Write your daily notes, blockers, or execution takeaways here..."
-                value={reflection}
-                onChange={(e) => handleReflectionChange(e.target.value)}
-                style={{ backgroundColor: '#020617', border: '1px solid #334155', borderRadius: '8px', padding: '10px', fontSize: '12px', color: '#fff', minHeight: '60px', outline: 'none', resize: 'vertical' }}
-              />
+            {/* SCAN, NOTES & PHOTO UPLOAD SECTION */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px', marginTop: '8px' }}>
+              
+              {/* Daily Reflection Journal */}
+              <div style={{ backgroundColor: '#161b2e', border: '1px solid #1e293b', borderRadius: '10px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <h3 style={{ fontSize: '13px', fontWeight: 'bold', color: '#cbd5e1', margin: 0 }}>📝 Daily Reflection & Journal</h3>
+                <textarea
+                  placeholder="Record your daily learnings or blockers..."
+                  value={reflection}
+                  onChange={(e) => handleReflectionChange(e.target.value)}
+                  style={{ backgroundColor: '#020617', border: '1px solid #334155', borderRadius: '8px', padding: '10px', fontSize: '12px', color: '#fff', minHeight: '80px', outline: 'none', resize: 'vertical' }}
+                />
+              </div>
+
+              {/* Scan Notes & Photo Upload */}
+              <div style={{ backgroundColor: '#161b2e', border: '1px solid #1e293b', borderRadius: '10px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <h3 style={{ fontSize: '13px', fontWeight: 'bold', color: '#cbd5e1', margin: 0 }}>📷 Scan Notes & Photos</h3>
+                  <button 
+                    onClick={() => fileInputRef.current?.click()}
+                    style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', cursor: 'pointer', fontWeight: 'bold' }}
+                  >
+                    + Upload Image
+                  </button>
+                  <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    onChange={handleImageUpload} 
+                    accept="image/*" 
+                    style={{ display: 'none' }} 
+                  />
+                </div>
+                
+                <textarea
+                  placeholder="Paste OCR text or notes from your scanned photos..."
+                  value={scanNotes}
+                  onChange={(e) => handleScanNotesChange(e.target.value)}
+                  style={{ backgroundColor: '#020617', border: '1px solid #334155', borderRadius: '8px', padding: '8px', fontSize: '12px', color: '#fff', minHeight: '40px', outline: 'none', resize: 'vertical' }}
+                />
+
+                {scannedImages.length > 0 && (
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '4px' }}>
+                    {scannedImages.map((img, idx) => (
+                      <div key={idx} style={{ position: 'relative', width: '50px', height: '50px', borderRadius: '6px', overflow: 'hidden', border: '1px solid #334155' }}>
+                        <img src={img} alt="Scan" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <button 
+                          onClick={() => removeImage(idx)}
+                          style={{ position: 'absolute', top: 1, right: 1, background: 'rgba(0,0,0,0.7)', color: '#ef4444', border: 'none', fontSize: '10px', width: '16px', height: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
             </div>
+
           </div>
         )}
 
@@ -586,7 +675,7 @@ export default function DisciplineHubProFinal() {
           </div>
         )}
 
-        {/* TAB: ANALYTICS & HEATMAP (Restored Feature) */}
+        {/* TAB: ANALYTICS & HEATMAP */}
         {activeTab === 'Analytics & Heatmap' && (
           <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '14px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <h2 style={{ fontSize: '16px', fontWeight: '800', color: '#34d399', margin: 0 }}>Analytics & Consistency Heatmap</h2>
@@ -597,7 +686,6 @@ export default function DisciplineHubProFinal() {
               <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0 }}>Keep completing your daily SQL modules and task items consistently to achieve your goals by {targetDate}.</p>
             </div>
 
-            {/* Heatmap Grid */}
             <div style={{ backgroundColor: '#161b2e', padding: '16px', borderRadius: '10px', border: '1px solid #334155', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <p style={{ fontSize: '12px', fontWeight: 'bold', color: '#cbd5e1', margin: 0 }}>Last 28 Days Activity Grid</p>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '6px' }}>
