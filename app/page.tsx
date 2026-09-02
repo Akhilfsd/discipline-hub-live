@@ -16,6 +16,10 @@ interface SqlTopic {
   title: string;
   category: string;
   completed: boolean;
+  notes: string;
+  syntax: string;
+  problem: string;
+  solution: string;
 }
 
 const initialHabits: Habit[] = [
@@ -29,6 +33,10 @@ const initialSqlRoadmap: SqlTopic[] = Array.from({ length: 41 }, (_, i) => ({
   title: `SQL Topic Module ${i + 1}: Fundamentals & Advanced Queries`,
   category: i < 15 ? 'Basics & Joins' : i < 30 ? 'Aggregations & Subqueries' : 'Window Functions & Performance',
   completed: false,
+  notes: `Core concept notes for module ${i + 1}. Focuses on execution flow, optimization techniques, and avoiding common query pitfalls in production databases.`,
+  syntax: `SELECT column1, aggregate_function(column2)\nFROM table_name\nWHERE condition\nGROUP BY column1;`,
+  problem: `Practical Challenge ${i + 1}: Write a query to retrieve records matching specific conditional aggregations while filtering out null datasets.`,
+  solution: `SELECT column1, COUNT(*) \nFROM table_name \nWHERE column2 IS NOT NULL \nGROUP BY column1;`
 }));
 
 const disciplineQuotes = [
@@ -50,6 +58,8 @@ export default function DisciplineHubPro() {
   
   const [habits, setHabits] = useState<Habit[]>(initialHabits);
   const [sqlRoadmap, setSqlRoadmap] = useState<SqlTopic[]>(initialSqlRoadmap);
+  const [selectedSqlTopic, setSelectedSqlTopic] = useState<SqlTopic | null>(null);
+
   const [reflection, setReflection] = useState<string>('');
   const [filterCategory, setFilterCategory] = useState<string>('All');
   const [newTitle, setNewTitle] = useState<string>('');
@@ -155,7 +165,8 @@ export default function DisciplineHubPro() {
     setHabits(habits.filter(h => h.id !== id));
   };
 
-  const toggleSqlTopic = (id: number) => {
+  const toggleSqlTopic = (id: number, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     setSqlRoadmap(prev => prev.map(item => item.id === id ? { ...item, completed: !item.completed } : item));
   };
 
@@ -443,13 +454,13 @@ export default function DisciplineHubPro() {
           </div>
         )}
 
-        {/* TAB 2: SQL ROADMAP */}
+        {/* TAB 2: SQL ROADMAP WITH NOTES, SYNTAX & PRACTICE PROBLEMS */}
         {activeTab === 'SQL Roadmap (0/41)' && (
           <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '14px', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
               <div>
                 <h2 style={{ fontSize: '15px', fontWeight: '800', color: '#34d399', margin: 0 }}>SQL Mastery Roadmap ({completedSqlCount}/41)</h2>
-                <p style={{ fontSize: '11px', color: '#94a3b8', margin: '2px 0 0 0' }}>Check off each modular concept as you lock it in.</p>
+                <p style={{ fontSize: '11px', color: '#94a3b8', margin: '2px 0 0 0' }}>Click any module to inspect short notes, syntax formulae, and practical interview problems.</p>
               </div>
               <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#818cf8' }}>
                 {Math.round((completedSqlCount / 41) * 100)}% Finished
@@ -464,7 +475,7 @@ export default function DisciplineHubPro() {
               {sqlRoadmap.map(topic => (
                 <div
                   key={topic.id}
-                  onClick={() => toggleSqlTopic(topic.id)}
+                  onClick={() => setSelectedSqlTopic(topic)}
                   style={{
                     backgroundColor: topic.completed ? '#064e3b33' : '#161b2e',
                     border: topic.completed ? '1px solid #059669' : '1px solid #1e293b',
@@ -473,27 +484,98 @@ export default function DisciplineHubPro() {
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '10px'
+                    justifyContent: 'space-between',
+                    gap: '10px',
+                    transition: 'border-color 0.2s'
                   }}
                 >
-                  <div style={{
-                    width: '20px', height: '20px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 'bold',
-                    border: topic.completed ? '1px solid #34d399' : '1px solid #475569',
-                    backgroundColor: topic.completed ? '#34d399' : '#0f172a',
-                    color: topic.completed ? '#020617' : 'transparent'
-                  }}>
-                    ✓
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0, flex: 1 }}>
+                    <div 
+                      onClick={(e) => toggleSqlTopic(topic.id, e)}
+                      style={{
+                        width: '20px', height: '20px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 'bold', flexShrink: 0,
+                        border: topic.completed ? '1px solid #34d399' : '1px solid #475569',
+                        backgroundColor: topic.completed ? '#34d399' : '#0f172a',
+                        color: topic.completed ? '#020617' : 'transparent'
+                      }}
+                    >
+                      ✓
+                    </div>
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <span style={{ fontSize: '12px', fontWeight: '700', color: topic.completed ? '#34d399' : '#f8fafc', display: 'block', textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                        {topic.title}
+                      </span>
+                      <span style={{ fontSize: '10px', color: '#94a3b8', marginTop: '2px', display: 'inline-block' }}>
+                        {topic.category}
+                      </span>
+                    </div>
                   </div>
-                  <div style={{ minWidth: 0 }}>
-                    <span style={{ fontSize: '12px', fontWeight: '700', color: topic.completed ? '#34d399' : '#f8fafc', display: 'block', textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden' }}>
-                      {topic.title}
-                    </span>
-                    <span style={{ fontSize: '10px', color: '#94a3b8', marginTop: '2px', display: 'inline-block' }}>
-                      {topic.category}
-                    </span>
-                  </div>
+                  <span style={{ fontSize: '10px', color: '#818cf8', fontWeight: 'bold', padding: '2px 6px', backgroundColor: '#1e293b', borderRadius: '4px', flexShrink: 0 }}>View</span>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* MODAL FOR SQL TOPIC DETAILS (NOTES, SYNTAX, PRACTICAL PROBLEM) */}
+        {selectedSqlTopic && (
+          <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(2, 6, 23, 0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', zIndex: 1000, boxSizing: 'border-box' }}>
+            <div style={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '16px', width: '100%', maxWidth: '650px', maxHeight: '90vh', overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', boxSizing: 'border-box' }}>
+              
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
+                <div>
+                  <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#818cf8', backgroundColor: '#1e293b', padding: '3px 8px', borderRadius: '4px' }}>{selectedSqlTopic.category}</span>
+                  <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#34d399', margin: '6px 0 0 0' }}>{selectedSqlTopic.title}</h3>
+                </div>
+                <button 
+                  onClick={() => setSelectedSqlTopic(null)}
+                  style={{ background: 'transparent', border: 'none', color: '#94a3b8', fontSize: '18px', cursor: 'pointer', padding: '4px' }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Module Notes Section */}
+              <div style={{ backgroundColor: '#161b2e', border: '1px solid #1e293b', borderRadius: '12px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <h4 style={{ fontSize: '12px', fontWeight: 'bold', color: '#cbd5e1', margin: 0, letterSpacing: '0.03em' }}>📖 Key Concept Notes</h4>
+                <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0, lineHeight: '1.5' }}>{selectedSqlTopic.notes}</p>
+              </div>
+
+              {/* Important Syntax & Formula Section */}
+              <div style={{ backgroundColor: '#161b2e', border: '1px solid #1e293b', borderRadius: '12px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <h4 style={{ fontSize: '12px', fontWeight: 'bold', color: '#cbd5e1', margin: 0, letterSpacing: '0.03em' }}>⚡ Important Syntax & Formula</h4>
+                <pre style={{ backgroundColor: '#020617', color: '#34d399', padding: '10px', borderRadius: '8px', fontSize: '11px', overflowX: 'auto', margin: 0, fontFamily: 'monospace' }}>
+                  {selectedSqlTopic.syntax}
+                </pre>
+              </div>
+
+              {/* Practical Interview Problem Section */}
+              <div style={{ backgroundColor: '#161b2e', border: '1px solid #1e293b', borderRadius: '12px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <h4 style={{ fontSize: '12px', fontWeight: 'bold', color: '#cbd5e1', margin: 0, letterSpacing: '0.03em' }}>💡 Practical Problem & Solution</h4>
+                <p style={{ fontSize: '12px', color: '#f8fafc', margin: 0, fontWeight: '600' }}>{selectedSqlTopic.problem}</p>
+                <div style={{ marginTop: '4px' }}>
+                  <p style={{ fontSize: '10px', color: '#818cf8', fontWeight: 'bold', margin: '0 0 2px 0' }}>Solution Template:</p>
+                  <pre style={{ backgroundColor: '#020617', color: '#818cf8', padding: '10px', borderRadius: '8px', fontSize: '11px', overflowX: 'auto', margin: 0, fontFamily: 'monospace' }}>
+                    {selectedSqlTopic.solution}
+                  </pre>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '6px' }}>
+                <button 
+                  onClick={() => toggleSqlTopic(selectedSqlTopic.id)}
+                  style={{ backgroundColor: selectedSqlTopic.completed ? '#065f46' : '#1e293b', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: '10px', fontSize: '12px', cursor: 'pointer', fontWeight: 'bold' }}
+                >
+                  {selectedSqlTopic.completed ? '✓ Module Completed' : 'Mark as Completed'}
+                </button>
+                <button 
+                  onClick={() => setSelectedSqlTopic(null)}
+                  style={{ backgroundColor: '#334155', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: '10px', fontSize: '12px', cursor: 'pointer', fontWeight: 'bold' }}
+                >
+                  Close
+                </button>
+              </div>
+
             </div>
           </div>
         )}
