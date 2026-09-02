@@ -31,11 +31,23 @@ const initialSqlRoadmap: SqlTopic[] = Array.from({ length: 41 }, (_, i) => ({
   completed: false,
 }));
 
-const MISSION_TARGET_DATE = '2026-12-02';
+const disciplineQuotes = [
+  "Your future self is built in the hours you spend alone working in silence.",
+  "Discipline is choosing between what you want now and what you want most.",
+  "We suffer more in imagination than in reality. Execution cures all anxiety.",
+  "Small daily disciplines repeated consistently lead to great achievements.",
+  "Action isn't just the effect of motivation; it's also the cause of it.",
+  "Focus is saying no to a hundred other good ideas that exist.",
+  "Consistency beats intensity when intensity refuses to be consistent.",
+  "Success is neither magical nor mysterious. It is the natural consequence of consistent fundamentals."
+];
 
 export default function DisciplineHubPro() {
   const [activeTab, setActiveTab] = useState<Tab>('Daily Habits & Scan');
   const [currentDate, setCurrentDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [targetDate, setTargetDate] = useState<string>('2026-12-02');
+  const [isEditingTarget, setIsEditingTarget] = useState<boolean>(false);
+  
   const [habits, setHabits] = useState<Habit[]>(initialHabits);
   const [sqlRoadmap, setSqlRoadmap] = useState<SqlTopic[]>(initialSqlRoadmap);
   const [reflection, setReflection] = useState<string>('');
@@ -49,27 +61,40 @@ export default function DisciplineHubPro() {
   const [isPomodoroRunning, setIsPomodoroRunning] = useState<boolean>(false);
   const [pomodoroMode, setPomodoroMode] = useState<'work' | 'break'>('work');
 
-  // Load persistence
+  // Load persistence on mount
   useEffect(() => {
     const savedHabits = localStorage.getItem('dh_habits');
     if (savedHabits) setHabits(JSON.parse(savedHabits));
 
     const savedSql = localStorage.getItem('dh_sql_roadmap');
     if (savedSql) setSqlRoadmap(JSON.parse(savedSql));
+
+    const savedTarget = localStorage.getItem('dh_target_date');
+    if (savedTarget) setTargetDate(savedTarget);
   }, []);
 
+  // Load reflection when currentDate changes
   useEffect(() => {
     const savedReflection = localStorage.getItem(`dh_reflection_${currentDate}`);
     setReflection(savedReflection || '');
   }, [currentDate]);
 
+  // Save habits
   useEffect(() => {
     localStorage.setItem('dh_habits', JSON.stringify(habits));
   }, [habits]);
 
+  // Save SQL roadmap
   useEffect(() => {
     localStorage.setItem('dh_sql_roadmap', JSON.stringify(sqlRoadmap));
   }, [sqlRoadmap]);
+
+  // Save target date
+  const handleTargetDateChange = (newDate: string) => {
+    setTargetDate(newDate);
+    localStorage.setItem('dh_target_date', newDate);
+    setIsEditingTarget(false);
+  };
 
   // Pomodoro Timer tick
   useEffect(() => {
@@ -83,13 +108,25 @@ export default function DisciplineHubPro() {
     return () => clearInterval(timer);
   }, [isPomodoroRunning, pomodoroSeconds, pomodoroMode]);
 
+  // Get daily quote based on currentDate string hash
+  const getDailyQuote = (dateStr: string) => {
+    let hash = 0;
+    for (let i = 0; i < dateStr.length; i++) {
+      hash = dateStr.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % disciplineQuotes.length;
+    return disciplineQuotes[index];
+  };
+
+  const currentQuote = getDailyQuote(currentDate);
+
   const todayHabits = habits.filter(h => h.completed[currentDate]);
   const completionPercent = habits.length > 0 ? Math.round((todayHabits.length / habits.length) * 100) : 0;
   const grade = completionPercent >= 90 ? 'A' : completionPercent >= 80 ? 'B' : completionPercent >= 70 ? 'C' : completionPercent >= 60 ? 'D' : 'F';
 
   const completedSqlCount = sqlRoadmap.filter(s => s.completed).length;
 
-  const timeDifference = new Date(MISSION_TARGET_DATE).getTime() - new Date().getTime();
+  const timeDifference = new Date(targetDate).getTime() - new Date().getTime();
   const daysRemaining = Math.max(0, Math.ceil(timeDifference / (1000 * 3600 * 24)));
 
   const toggleHabit = (id: string) => {
@@ -150,8 +187,8 @@ export default function DisciplineHubPro() {
     <div style={{ backgroundColor: '#020617', color: '#f8fafc', minHeight: '100vh', padding: '32px 48px', fontFamily: 'sans-serif', boxSizing: 'border-box' }}>
       <div style={{ width: '100%', maxWidth: '1600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
-        {/* MISSION COUNTDOWN BANNER */}
-        <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '24px', padding: '24px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        {/* MISSION COUNTDOWN BANNER (NOW EDITABLE) */}
+        <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '24px', padding: '24px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             <div style={{ backgroundColor: '#1e293b', padding: '16px', borderRadius: '18px', display: 'flex' }}>{renderIcon('Shield')}</div>
             <div>
@@ -159,15 +196,40 @@ export default function DisciplineHubPro() {
               <p style={{ fontSize: '22px', fontWeight: '900', color: '#f8fafc', margin: '6px 0 0 0' }}>{daysRemaining} Days remaining until target date</p>
             </div>
           </div>
-          <button style={{ backgroundColor: '#1e293b', border: '1px solid #334155', color: '#cbd5e1', fontSize: '14px', padding: '12px 20px', borderRadius: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: '600' }}>
-            {renderIcon('Calendar')}
-            Target Date ({MISSION_TARGET_DATE})
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {isEditingTarget ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#1e293b', padding: '8px 12px', borderRadius: '14px', border: '1px solid #334155' }}>
+                <input
+                  type="date"
+                  value={targetDate}
+                  onChange={(e) => handleTargetDateChange(e.target.value)}
+                  style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '14px', outline: 'none', cursor: 'pointer' }}
+                />
+                <button 
+                  onClick={() => setIsEditingTarget(false)}
+                  style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer', fontWeight: 'bold' }}
+                >
+                  Done
+                </button>
+              </div>
+            ) : (
+              <button 
+                onClick={() => setIsEditingTarget(true)}
+                style={{ backgroundColor: '#1e293b', border: '1px solid #334155', color: '#cbd5e1', fontSize: '14px', padding: '12px 20px', borderRadius: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', fontWeight: '600' }}
+              >
+                {renderIcon('Calendar')}
+                Target Date: {targetDate} (Edit)
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* QUOTE CARD */}
-        <div style={{ backgroundColor: '#161b2e', borderRadius: '20px', padding: '20px 28px', border: '1px solid #1e293b', fontStyle: 'italic', color: '#cbd5e1', fontSize: '16px' }}>
-          "Your future self is built in the hours you spend alone working in silence."
+        {/* ROTATING DAILY QUOTE CARD */}
+        <div style={{ backgroundColor: '#161b2e', borderRadius: '20px', padding: '20px 28px', border: '1px solid #1e293b', fontStyle: 'italic', color: '#cbd5e1', fontSize: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+          <span>"{currentQuote}"</span>
+          <span style={{ fontSize: '11px', fontStyle: 'normal', fontWeight: '700', backgroundColor: '#1e293b', color: '#818cf8', padding: '4px 10px', borderRadius: '8px' }}>
+            Daily Focus ({currentDate})
+          </span>
         </div>
 
         {/* MAIN DASHBOARD HEADER */}
@@ -270,7 +332,7 @@ export default function DisciplineHubPro() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
                 <h2 style={{ fontSize: '16px', fontWeight: '700', color: '#f8fafc', margin: 0 }}>Daily Task Board</h2>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <div style={{ backgroundColor: '#161b2e', border: '1px solid #334155', padding: '6px', borderRadius: '14px', display: 'flex', gap: '6px' }}>
+                  <div style={{ backgroundColor: '#161b2e', border: '1px solid #334155', padding: '6px', borderRadius: '14px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                     {['All', 'Health', 'Productivity', 'Mindset', 'Habits'].map(cat => (
                       <button
                         key={cat}
@@ -384,7 +446,7 @@ export default function DisciplineHubPro() {
         {/* TAB 2: SQL ROADMAP (0/41) */}
         {activeTab === 'SQL Roadmap (0/41)' && (
           <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '24px', padding: '32px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
               <div>
                 <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#34d399', margin: 0 }}>SQL Mastery Roadmap ({completedSqlCount}/41 Completed)</h2>
                 <p style={{ fontSize: '13px', color: '#94a3b8', margin: '4px 0 0 0' }}>Check off each modular concept as you lock it in.</p>
@@ -459,7 +521,7 @@ export default function DisciplineHubPro() {
               {String(Math.floor(pomodoroSeconds / 60)).padStart(2, '0')}:{String(pomodoroSeconds % 60).padStart(2, '0')}
             </div>
 
-            <div style={{ display: 'flex', gap: '16px' }}>
+            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
               <button 
                 onClick={() => setIsPomodoroRunning(!isPomodoroRunning)}
                 style={{ backgroundColor: isPomodoroRunning ? '#dc2626' : '#059669', color: '#fff', border: 'none', padding: '14px 32px', borderRadius: '14px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}
@@ -484,8 +546,8 @@ export default function DisciplineHubPro() {
             
             <div style={{ backgroundColor: '#161b2e', padding: '24px', borderRadius: '16px', border: '1px solid #334155', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#f8fafc', margin: 0 }}>Current Streak Status</p>
-              <p style={{ fontSize: '28px', fontWeight: '900', color: '#34d399', margin: 0 }}>🔥 3 Day Active Streak</p>
-              <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0 }}>Keep logging your daily habits before midnight to maintain momentum.</p>
+              <p style={{ fontSize: '28px', fontWeight: '900', color: '#34d399', margin: 0 }}>🔥 Active Streak Tracking</p>
+              <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0 }}>Keep logging your daily habits before midnight to maintain momentum toward {targetDate}.</p>
             </div>
           </div>
         )}
