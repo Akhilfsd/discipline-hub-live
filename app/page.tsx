@@ -7,7 +7,6 @@ interface Activity {
   title: string;
   category: string;
   frequency: string;
-  targetTime?: string;
 }
 
 interface DailyLog {
@@ -25,10 +24,10 @@ interface SqlTopic {
   completedSubtopics: string[];
 }
 
-const ACTIVITIES_KEY = 'disc_hub_activities_v2';
-const LOGS_KEY = 'disc_hub_logs_v2';
-const SQL_KEY = 'disc_hub_sql_v2';
-const TARGET_DATE_KEY = 'disc_hub_target_v2';
+const ACTIVITIES_KEY = 'disc_hub_acts_v3';
+const LOGS_KEY = 'disc_hub_logs_v3';
+const SQL_KEY = 'disc_hub_sql_v3';
+const TARGET_KEY = 'disc_hub_target_v3';
 
 const DEFAULT_SQL_TOPICS: Omit<SqlTopic, 'completedSubtopics'>[] = [
   {
@@ -100,7 +99,6 @@ export default function Page() {
   const [note, setNote] = useState('');
 
   useEffect(() => {
-    // Load local storage data safely
     const savedActs = localStorage.getItem(ACTIVITIES_KEY);
     if (savedActs) setActivities(JSON.parse(savedActs));
 
@@ -116,7 +114,7 @@ export default function Page() {
       localStorage.setItem(SQL_KEY, JSON.stringify(initial));
     }
 
-    const savedTarget = localStorage.getItem(TARGET_DATE_KEY);
+    const savedTarget = localStorage.getItem(TARGET_KEY);
     if (savedTarget) setTargetDate(savedTarget);
 
     const savedNote = localStorage.getItem(`note_${currentDate}`);
@@ -124,12 +122,12 @@ export default function Page() {
     else setNote('');
   }, [currentDate]);
 
-  function saveActivitiesToStorage(newActs: Activity[]) {
+  function saveActivities(newActs: Activity[]) {
     setActivities(newActs);
     localStorage.setItem(ACTIVITIES_KEY, JSON.stringify(newActs));
   }
 
-  function saveLogsToStorage(newLogs: DailyLog[]) {
+  function saveLogs(newLogs: DailyLog[]) {
     setLogs(newLogs);
     localStorage.setItem(LOGS_KEY, JSON.stringify(newLogs));
   }
@@ -143,33 +141,28 @@ export default function Page() {
       category,
       frequency: 'Daily'
     };
-    saveActivitiesToStorage([...activities, newAct]);
+    saveActivities([...activities, newAct]);
     setTitle('');
     setShowAddForm(false);
   }
 
   function handleDeleteActivity(id: string) {
-    saveActivitiesToStorage(activities.filter(a => a.id !== id));
-    saveLogsToStorage(logs.filter(l => l.activityId !== id));
+    saveActivities(activities.filter(a => a.id !== id));
+    saveLogs(logs.filter(l => l.activityId !== id));
   }
 
-  function toggleLogCompletion(activityId: string) {
-    const existingIndex = logs.findIndex(l => l.activityId === activityId && l.date === currentDate);
-    let updatedLogs = [...logs];
-    if (existingIndex > -1) {
-      updatedLogs[existingIndex].completed = !updatedLogs[existingIndex].completed;
+  function toggleLog(activityId: string) {
+    const idx = logs.findIndex(l => l.activityId === activityId && l.date === currentDate);
+    let updated = [...logs];
+    if (idx > -1) {
+      updated[idx].completed = !updated[idx].completed;
     } else {
-      updatedLogs.push({
-        id: Math.random().toString(36).substring(2, 9),
-        activityId,
-        date: currentDate,
-        completed: true
-      });
+      updated.push({ id: Math.random().toString(36).substring(2, 9), activityId, date: currentDate, completed: true });
     }
-    saveLogsToStorage(updatedLogs);
+    saveLogs(updated);
   }
 
-  function toggleSqlSubtopic(topicId: string, sub: string) {
+  function toggleSql(topicId: string, sub: string) {
     const updated = sqlTopics.map(t => {
       if (t.id === topicId) {
         const exists = t.completedSubtopics.includes(sub);
@@ -182,12 +175,6 @@ export default function Page() {
     localStorage.setItem(SQL_KEY, JSON.stringify(updated));
   }
 
-  function handleNoteChange(val: string) {
-    setNote(val);
-    localStorage.setItem(`note_${currentDate}`, val);
-  }
-
-  // Calculations
   const todayLogs = logs.filter(l => l.date === currentDate && l.completed);
   const completionRate = activities.length > 0 ? Math.round((todayLogs.length / activities.length) * 100) : 0;
 
@@ -200,8 +187,6 @@ export default function Page() {
   const sqlRate = totalSubs > 0 ? Math.round((doneSubs / totalSubs) * 100) : 0;
 
   const daysLeft = Math.max(0, Math.ceil((new Date(targetDate).getTime() - new Date().setHours(0,0,0,0)) / (1000 * 60 * 60 * 24)));
-
-  // Past 7 days matrix
   const pastDays = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
@@ -209,131 +194,95 @@ export default function Page() {
   });
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100 p-4 md:p-8 font-sans">
-      <div className="max-w-3xl mx-auto space-y-6">
+    <div style={{ backgroundColor: '#020617', color: '#f8fafc', minHeight: '100vh', padding: '24px 16px', fontFamily: 'system-ui, sans-serif' }}>
+      <div style={{ maxWidth: '680px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
-        {/* HEADER BAR */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
+        {/* HEADER */}
+        <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)' }}>
           <div>
-            <h1 className="text-xl font-bold text-emerald-400 flex items-center gap-2">
-              ⚡ Discipline & Habit Hub Pro
-            </h1>
-            <p className="text-xs text-slate-400 mt-0.5">Uncompromising focus, granular tracking, and clean execution.</p>
+            <h1 style={{ fontSize: '18px', fontWeight: 'bold', color: '#34d399', margin: 0 }}>⚡ Discipline & Habit Hub Pro</h1>
+            <p style={{ fontSize: '12px', color: '#94a3b8', margin: '4px 0 0 0' }}>Uncompromising focus, clean execution.</p>
           </div>
-          <div className="flex items-center gap-3">
-            <input 
-              type="date" 
-              value={currentDate} 
-              onChange={e => setCurrentDate(e.target.value)}
-              className="bg-slate-800 border border-slate-700 text-xs px-3 py-2 rounded-xl text-slate-200 outline-none"
-            />
-          </div>
+          <input 
+            type="date" 
+            value={currentDate} 
+            onChange={e => setCurrentDate(e.target.value)}
+            style={{ background: '#1e293b', border: '1px solid #334155', color: '#f8fafc', fontSize: '12px', padding: '8px 12px', borderRadius: '10px', outline: 'none' }}
+          />
         </div>
 
-        {/* STATS & TARGET BANNER */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center justify-between">
+        {/* STATS */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-              <span className="text-[10px] uppercase font-bold tracking-wider text-indigo-400">Mission Target Countdown</span>
-              <div className="text-2xl font-black mt-0.5">{daysLeft} Days Left</div>
+              <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#818cf8', textTransform: 'uppercase' }}>Target Countdown</span>
+              <div style={{ fontSize: '20px', fontWeight: '900', marginTop: '2px' }}>{daysLeft} Days</div>
             </div>
             <input 
               type="date" 
               value={targetDate} 
-              onChange={e => { setTargetDate(e.target.value); localStorage.setItem(TARGET_DATE_KEY, e.target.value); }}
-              className="bg-slate-800 border border-slate-700 text-[10px] p-1.5 rounded-lg text-slate-300"
+              onChange={e => { setTargetDate(e.target.value); localStorage.setItem(TARGET_KEY, e.target.value); }}
+              style={{ background: '#1e293b', border: '1px solid #334155', color: '#cbd5e1', fontSize: '10px', padding: '4px', borderRadius: '6px' }}
             />
           </div>
 
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center justify-between">
+          <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-              <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-400">Today's Progress</span>
-              <div className="text-2xl font-black mt-0.5">{completionRate}% Done</div>
+              <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#34d399', textTransform: 'uppercase' }}>Today's Progress</span>
+              <div style={{ fontSize: '20px', fontWeight: '900', marginTop: '2px' }}>{completionRate}%</div>
             </div>
-            <div className="text-xs px-2.5 py-1 bg-emerald-950/60 border border-emerald-800 text-emerald-300 rounded-lg font-bold">
-              {todayLogs.length}/{activities.length} Habits
+            <div style={{ fontSize: '11px', background: 'rgba(6, 78, 59, 0.6)', border: '1px solid #065f46', color: '#34d399', padding: '4px 8px', borderRadius: '8px', fontWeight: 'bold' }}>
+              {todayLogs.length}/{activities.length} Done
             </div>
           </div>
         </div>
 
-        {/* TABS SELECTOR */}
-        <div className="flex bg-slate-900 p-1.5 rounded-2xl border border-slate-800 gap-1">
-          <button 
-            onClick={() => setActiveTab('habits')}
-            className={`flex-1 py-2.5 text-xs font-semibold rounded-xl transition ${activeTab === 'habits' ? 'bg-emerald-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
-          >
-            Daily Habits
-          </button>
-          <button 
-            onClick={() => setActiveTab('sql')}
-            className={`flex-1 py-2.5 text-xs font-semibold rounded-xl transition ${activeTab === 'sql' ? 'bg-emerald-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
-          >
-            SQL Roadmap ({sqlRate}%)
-          </button>
-          <button 
-            onClick={() => setActiveTab('matrix')}
-            className={`flex-1 py-2.5 text-xs font-semibold rounded-xl transition ${activeTab === 'matrix' ? 'bg-emerald-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
-          >
-            Weekly Matrix
-          </button>
+        {/* TABS */}
+        <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '6px', display: 'flex', gap: '6px' }}>
+          <button onClick={() => setActiveTab('habits')} style={{ flex: 1, padding: '10px', fontSize: '12px', fontWeight: 'bold', borderRadius: '10px', border: 'none', background: activeTab === 'habits' ? '#059669' : 'transparent', color: activeTab === 'habits' ? '#fff' : '#94a3b8', cursor: 'pointer' }}>Daily Habits</button>
+          <button onClick={() => setActiveTab('sql')} style={{ flex: 1, padding: '10px', fontSize: '12px', fontWeight: 'bold', borderRadius: '10px', border: 'none', background: activeTab === 'sql' ? '#059669' : 'transparent', color: activeTab === 'sql' ? '#fff' : '#94a3b8', cursor: 'pointer' }}>SQL Roadmap ({sqlRate}%)</button>
+          <button onClick={() => setActiveTab('matrix')} style={{ flex: 1, padding: '10px', fontSize: '12px', fontWeight: 'bold', borderRadius: '10px', border: 'none', background: activeTab === 'matrix' ? '#059669' : 'transparent', color: activeTab === 'matrix' ? '#fff' : '#94a3b8', cursor: 'pointer' }}>Weekly Matrix</button>
         </div>
 
         {/* TAB 1: HABITS */}
         {activeTab === 'habits' && (
-          <div className="space-y-5">
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-xl">
-              <div className="flex justify-between items-center">
-                <h2 className="text-sm font-bold text-slate-200">Daily Task Board ({currentDate})</h2>
-                <button 
-                  onClick={() => setShowAddForm(!showAddForm)}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-1.5 rounded-xl font-medium transition"
-                >
-                  {showAddForm ? 'Cancel' : '+ New Habit'}
-                </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h2 style={{ fontSize: '14px', fontWeight: 'bold', margin: 0 }}>Daily Task Board</h2>
+                <button onClick={() => setShowAddForm(!showAddForm)} style={{ background: '#059669', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '10px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>{showAddForm ? 'Cancel' : '+ New Habit'}</button>
               </div>
 
               {showAddForm && (
-                <form onSubmit={handleAddActivity} className="bg-slate-800 p-3 rounded-xl border border-slate-700 flex flex-col sm:flex-row gap-2">
-                  <input 
-                    type="text" 
-                    placeholder="Habit title (e.g. Study SQL, Workout)..." 
-                    value={title} 
-                    onChange={e => setTitle(e.target.value)}
-                    className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 outline-none"
-                  />
-                  <select 
-                    value={category} 
-                    onChange={e => setCategory(e.target.value)}
-                    className="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 outline-none"
-                  >
+                <form onSubmit={handleAddActivity} style={{ background: '#1e293b', padding: '12px', borderRadius: '12px', display: 'flex', gap: '8px' }}>
+                  <input type="text" placeholder="Habit title..." value={title} onChange={e => setTitle(e.target.value)} style={{ flex: 1, background: '#0f172a', border: '1px solid #334155', color: '#fff', padding: '8px 12px', borderRadius: '8px', fontSize: '12px', outline: 'none' }} />
+                  <select value={category} onChange={e => setCategory(e.target.value)} style={{ background: '#0f172a', border: '1px solid #334155', color: '#fff', padding: '8px', borderRadius: '8px', fontSize: '12px', outline: 'none' }}>
                     <option value="Productivity">Productivity</option>
                     <option value="Health">Health</option>
                     <option value="Learning">Learning</option>
                   </select>
-                  <button type="submit" className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-medium">Save</button>
+                  <button type="submit" style={{ background: '#059669', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>Save</button>
                 </form>
               )}
 
-              <div className="space-y-2">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {activities.length === 0 ? (
-                  <p className="text-xs text-slate-500 text-center py-6">No habits added yet. Click '+ New Habit' to begin.</p>
+                  <p style={{ fontSize: '12px', color: '#64748b', textAlign: 'center', padding: '20px 0', margin: 0 }}>No habits added yet. Click '+ New Habit' to begin.</p>
                 ) : (
                   activities.map(act => {
                     const isDone = logs.some(l => l.activityId === act.id && l.date === currentDate && l.completed);
                     return (
-                      <div key={act.id} className={`flex items-center justify-between p-3 rounded-xl border transition ${isDone ? 'bg-emerald-950/20 border-emerald-800/40' : 'bg-slate-800/40 border-slate-700/60'}`}>
-                        <div onClick={() => toggleLogCompletion(act.id)} className="flex items-center gap-3 cursor-pointer flex-1">
-                          <div className={`w-5 h-5 rounded-md flex items-center justify-center border text-xs font-bold ${isDone ? 'bg-emerald-500 border-emerald-400 text-slate-950' : 'border-slate-600 bg-slate-900 text-transparent'}`}>
-                            ✓
+                      <div key={act.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: isDone ? 'rgba(6, 78, 59, 0.2)' : '#1e293b', border: `1px solid ${isDone ? '#065f46' : '#334155'}`, padding: '12px 16px', borderRadius: '12px' }}>
+                        <div onClick={() => toggleLog(act.id)} style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', flex: 1 }}>
+                          <div style={{ width: '20px', height: '20px', borderRadius: '6px', border: `1px solid ${isDone ? '#34d399' : '#475569'}`, background: isDone ? '#34d399' : '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#020617', fontSize: '11px', fontWeight: 'bold' }}>
+                            {isDone ? '✓' : ''}
                           </div>
                           <div>
-                            <div className={`text-xs font-medium ${isDone ? 'text-emerald-300 line-through' : 'text-slate-200'}`}>{act.title}</div>
-                            <span className="text-[10px] text-slate-400">{act.category}</span>
+                            <div style={{ fontSize: '13px', fontWeight: '500', color: isDone ? '#6ee7b7' : '#f8fafc', textDecoration: isDone ? 'line-through' : 'none' }}>{act.title}</div>
+                            <span style={{ fontSize: '10px', color: '#94a3b8' }}>{act.category}</span>
                           </div>
                         </div>
-                        <button onClick={() => handleDeleteActivity(act.id)} className="text-slate-500 hover:text-red-400 text-xs px-2 py-1">
-                          ✕
-                        </button>
+                        <button onClick={() => handleDeleteActivity(act.id)} style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '14px' }}>✕</button>
                       </div>
                     );
                   })
@@ -341,15 +290,14 @@ export default function Page() {
               </div>
             </div>
 
-            {/* Daily Reflection Note */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-2 shadow-xl">
-              <label className="text-xs font-bold text-slate-300">Daily Focus Note ({currentDate})</label>
+            <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#cbd5e1' }}>Daily Focus Note ({currentDate})</label>
               <textarea 
-                rows={2}
+                rows={3}
                 value={note}
-                onChange={e => handleNoteChange(e.target.value)}
-                placeholder="Log your deep work notes or key takeaways..."
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs text-slate-200 outline-none resize-none"
+                onChange={e => { setNote(e.target.value); localStorage.setItem(`note_${currentDate}`, e.target.value); }}
+                placeholder="Log your deep work wins or distractions conquered..."
+                style={{ width: '100%', background: '#1e293b', border: '1px solid #334155', borderRadius: '12px', padding: '12px', fontSize: '12px', color: '#f8fafc', outline: 'none', resize: 'none', boxSizing: 'border-box' }}
               />
             </div>
           </div>
@@ -357,31 +305,31 @@ export default function Page() {
 
         {/* TAB 2: SQL ROADMAP */}
         {activeTab === 'sql' && (
-          <div className="space-y-4">
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex justify-between items-center">
-              <span className="text-xs font-bold text-slate-300">SQL Mastery Progress</span>
-              <span className="text-xs font-mono text-emerald-400">{doneSubs} / {totalSubs} subtopics ({sqlRate}%)</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '12px', fontWeight: 'bold' }}>SQL Mastery Progress</span>
+              <span style={{ fontSize: '12px', fontFamily: 'monospace', color: '#34d399', fontWeight: 'bold' }}>{doneSubs} / {totalSubs} subtopics ({sqlRate}%)</span>
             </div>
 
             {sqlTopics.map(topic => (
-              <div key={topic.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3 shadow-xl">
-                <div className="flex justify-between items-center border-b border-slate-800 pb-2">
-                  <h3 className="text-xs font-bold text-slate-200">{topic.title}</h3>
-                  <span className="text-[10px] bg-indigo-950 border border-indigo-800 text-indigo-300 px-2 py-0.5 rounded-md">{topic.module}</span>
+              <div key={topic.id} style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1e293b', paddingBottom: '10px' }}>
+                  <h3 style={{ fontSize: '13px', fontWeight: 'bold', margin: 0 }}>{topic.title}</h3>
+                  <span style={{ fontSize: '10px', background: '#1e293b', border: '1px solid #334155', color: '#818cf8', padding: '4px 8px', borderRadius: '6px' }}>{topic.module}</span>
                 </div>
-                <div className="space-y-1.5">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {topic.subtopics.map((sub, idx) => {
                     const isDone = topic.completedSubtopics.includes(sub);
                     return (
                       <div 
                         key={idx}
-                        onClick={() => toggleSqlSubtopic(topic.id, sub)}
-                        className={`flex items-center gap-2.5 p-2.5 rounded-xl border cursor-pointer text-xs transition ${isDone ? 'bg-emerald-950/20 border-emerald-800/40 text-emerald-300' : 'bg-slate-800/40 border-slate-700/60 text-slate-300 hover:bg-slate-800'}`}
+                        onClick={() => toggleSql(topic.id, sub)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '10px', background: isDone ? 'rgba(6, 78, 59, 0.2)' : '#1e293b', border: `1px solid ${isDone ? '#065f46' : '#334155'}`, padding: '10px 14px', borderRadius: '10px', cursor: 'pointer', fontSize: '12px', color: isDone ? '#6ee7b7' : '#cbd5e1' }}
                       >
-                        <div className={`w-4 h-4 rounded flex items-center justify-center border text-[10px] font-bold ${isDone ? 'bg-emerald-500 border-emerald-400 text-slate-950' : 'border-slate-600 bg-slate-900 text-transparent'}`}>
-                          ✓
+                        <div style={{ width: '16px', height: '16px', borderRadius: '4px', border: `1px solid ${isDone ? '#34d399' : '#475569'}`, background: isDone ? '#34d399' : '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#020617', fontSize: '10px', fontWeight: 'bold' }}>
+                          {isDone ? '✓' : ''}
                         </div>
-                        <span className={isDone ? 'line-through' : ''}>{sub}</span>
+                        <span style={{ textDecoration: isDone ? 'line-through' : 'none' }}>{sub}</span>
                       </div>
                     );
                   })}
@@ -391,30 +339,28 @@ export default function Page() {
           </div>
         )}
 
-        {/* TAB 3: WEEKLY MATRIX */}
+        {/* TAB 3: MATRIX */}
         {activeTab === 'matrix' && (
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-xl overflow-x-auto">
-            <h2 className="text-xs font-bold text-slate-200">Weekly Consistency Matrix (Past 7 Days)</h2>
+          <div style={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', overflowX: 'auto' }}>
+            <h2 style={{ fontSize: '13px', fontWeight: 'bold', margin: 0 }}>Weekly Consistency Matrix (Past 7 Days)</h2>
             {activities.length === 0 ? (
-              <p className="text-xs text-slate-500 text-center py-6">No habits recorded yet.</p>
+              <p style={{ fontSize: '12px', color: '#64748b', textAlign: 'center', padding: '20px 0', margin: 0 }}>No habits recorded yet.</p>
             ) : (
-              <div className="min-w-[450px] space-y-2">
-                <div className="grid grid-cols-8 gap-1 text-[10px] font-bold text-slate-400 border-b border-slate-800 pb-2">
+              <div style={{ minWidth: '420px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1.5fr repeat(7, 1fr)', gap: '4px', fontSize: '10px', fontWeight: 'bold', color: '#94a3b8', borderBottom: '1px solid #1e293b', paddingBottom: '8px' }}>
                   <div>Habit</div>
-                  {pastDays.map(d => (
-                    <div key={d} className="text-center">{d.slice(5)}</div>
-                  ))}
+                  {pastDays.map(d => <div key={d} style={{ textAlign: 'center' }}>{d.slice(5)}</div>)}
                 </div>
                 {activities.map(act => (
-                  <div key={act.id} className="grid grid-cols-8 gap-1 items-center text-xs py-1">
-                    <div className="truncate text-slate-300 font-medium pr-1">{act.title}</div>
+                  <div key={act.id} style={{ display: 'grid', gridTemplateColumns: '1.5fr repeat(7, 1fr)', gap: '4px', alignItems: 'center', fontSize: '11px' }}>
+                    <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#cbd5e1', fontWeight: '500' }}>{act.title}</div>
                     {pastDays.map(d => {
                       const logged = logs.some(l => l.activityId === act.id && l.date === d && l.completed);
                       return (
-                        <div key={d} className="flex justify-center">
-                          <span className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold ${logged ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-600'}`}>
+                        <div key={d} style={{ display: 'flex', justifyContent: 'center' }}>
+                          <div style={{ width: '22px', height: '22px', borderRadius: '6px', background: logged ? '#34d399' : '#1e293b', color: logged ? '#020617' : '#475569', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 'bold' }}>
                             {logged ? '✓' : '·'}
-                          </span>
+                          </div>
                         </div>
                       );
                     })}
@@ -426,6 +372,6 @@ export default function Page() {
         )}
 
       </div>
-    </main>
+    </div>
   );
 }
