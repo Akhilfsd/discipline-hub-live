@@ -11,6 +11,7 @@ interface Activity {
   createdAt: string;
 }
 
+
 interface DailyLog {
   id: string;
   date: string;
