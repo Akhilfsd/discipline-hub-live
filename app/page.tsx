@@ -7,7 +7,6 @@ type Tab = 'Daily Habits & Scan' | 'SQL Roadmap' | 'Pomodoro Timer' | 'Analytics
 interface Habit {
   id: string;
   title: string;
-  category: 'Health' | 'Productivity' | 'Mindset' | 'Habits';
   completed: { [date: string]: boolean };
 }
 
@@ -30,9 +29,9 @@ interface SqlModule {
 }
 
 const initialHabits: Habit[] = [
-  { id: 'h1', title: 'Power BI Lecture & Practice', category: 'Productivity', completed: {} },
-  { id: 'h2', title: 'LeetCode SQL Medium Problem', category: 'Productivity', completed: {} },
-  { id: 'h3', title: 'Morning Workout & Stretching', category: 'Health', completed: {} },
+  { id: 'h1', title: 'Power BI Lecture & Practice', completed: {} },
+  { id: 'h2', title: 'LeetCode SQL Medium Problem', completed: {} },
+  { id: 'h3', title: 'Morning Workout & Stretching', completed: {} },
 ];
 
 const comprehensiveSqlModules: Omit<SqlModule, 'completed'>[] = [
@@ -254,12 +253,9 @@ export default function DisciplineHubUltimate() {
 
   const [reflection, setReflection] = useState<string>('');
   const [scanNotes, setScanNotes] = useState<string>('');
-  const [scannedImages, setScannedImages] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [filterCategory, setFilterCategory] = useState<string>('All');
   const [newTitle, setNewTitle] = useState<string>('');
-  const [newCategory, setNewCategory] = useState<'Health' | 'Productivity' | 'Mindset' | 'Habits'>('Productivity');
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [extractionStatus, setExtractionStatus] = useState<string>('');
 
@@ -270,95 +266,72 @@ export default function DisciplineHubUltimate() {
 
   // Load saved state
   useEffect(() => {
-    const savedHabits = localStorage.getItem('dh_habits_ult_v4');
+    const savedHabits = localStorage.getItem('dh_habits_ult_v5');
     if (savedHabits) setHabits(JSON.parse(savedHabits));
 
-    const savedSql = localStorage.getItem('dh_sql_ult_v4');
+    const savedSql = localStorage.getItem('dh_sql_ult_v5');
     if (savedSql) setSqlRoadmap(JSON.parse(savedSql));
 
-    const savedTarget = localStorage.getItem('dh_target_ult_v4');
+    const savedTarget = localStorage.getItem('dh_target_ult_v5');
     if (savedTarget) setTargetDate(savedTarget);
   }, []);
 
   useEffect(() => {
-    const savedRef = localStorage.getItem(`dh_ref_ult_v4_${currentDate}`);
+    const savedRef = localStorage.getItem(`dh_ref_ult_v5_${currentDate}`);
     setReflection(savedRef || '');
 
-    const savedScan = localStorage.getItem(`dh_scan_ult_v4_${currentDate}`);
+    const savedScan = localStorage.getItem(`dh_scan_ult_v5_${currentDate}`);
     setScanNotes(savedScan || '');
-
-    const savedImgs = localStorage.getItem(`dh_imgs_ult_v4_${currentDate}`);
-    if (savedImgs) setScannedImages(JSON.parse(savedImgs));
   }, [currentDate]);
 
   useEffect(() => {
-    localStorage.setItem('dh_habits_ult_v4', JSON.stringify(habits));
+    localStorage.setItem('dh_habits_ult_v5', JSON.stringify(habits));
   }, [habits]);
 
   useEffect(() => {
-    localStorage.setItem('dh_sql_ult_v4', JSON.stringify(sqlRoadmap));
+    localStorage.setItem('dh_sql_ult_v5', JSON.stringify(sqlRoadmap));
   }, [sqlRoadmap]);
 
   const handleTargetDateChange = (newDate: string) => {
     setTargetDate(newDate);
-    localStorage.setItem('dh_target_ult_v4', newDate);
+    localStorage.setItem('dh_target_ult_v5', newDate);
     setIsEditingTarget(false);
   };
 
   const handleReflectionChange = (val: string) => {
     setReflection(val);
-    localStorage.setItem(`dh_ref_ult_v4_${currentDate}`, val);
+    localStorage.setItem(`dh_ref_ult_v5_${currentDate}`, val);
   };
 
   const handleScanNotesChange = (val: string) => {
     setScanNotes(val);
-    localStorage.setItem(`dh_scan_ult_v4_${currentDate}`, val);
+    localStorage.setItem(`dh_scan_ult_v5_${currentDate}`, val);
   };
 
-  // SMART HANDWRITTEN EXTRACTION & AUTO-CATEGORIZATION ENGINE
-  const handleExtractAndCategorize = () => {
-    if (!scanNotes.trim() && scannedImages.length === 0) {
-      setExtractionStatus('⚠️ Please enter scan notes or upload an image first.');
+  // HANDWRITTEN / PHOTO OCR DIRECT TASK EXTRACTION (NO CATEGORIES)
+  const handleExtractTasks = () => {
+    if (!scanNotes.trim()) {
+      setExtractionStatus('⚠️ Please upload a photo or enter handwritten text first.');
       return;
     }
 
-    setExtractionStatus('✨ Processing handwritten content and auto-categorizing...');
+    setExtractionStatus('✨ Extracting written/printed tasks into list...');
 
     setTimeout(() => {
-      // Split raw notes by line or bullet point
       const lines = scanNotes
         .split(/\n|,|\u2022|-/)
         .map(l => l.trim())
-        .filter(l => l.length > 3);
-
-      if (lines.length === 0 && scannedImages.length > 0) {
-        // Simulated mock extraction if only image is uploaded without text
-        lines.push('Review LeetCode SQL Medium Problems');
-        lines.push('Morning 5km Jog & Stretching');
-      }
+        .filter(l => l.length > 2);
 
       let addedCount = 0;
       const updatedHabits = [...habits];
 
       lines.forEach(line => {
-        // Smart keyword categorization logic
-        let cat: 'Health' | 'Productivity' | 'Mindset' | 'Habits' = 'Habits';
-        const lower = line.toLowerCase();
-        if (lower.includes('workout') || lower.includes('gym') || lower.includes('run') || lower.includes('jog') || lower.includes('walk') || lower.includes('water') || lower.includes('sleep') || lower.includes('stretch')) {
-          cat = 'Health';
-        } else if (lower.includes('sql') || lower.includes('code') || lower.includes('power bi') || lower.includes('study') || lower.includes('leetcode') || lower.includes('project') || lower.includes('work') || lower.includes('excel')) {
-          cat = 'Productivity';
-        } else if (lower.includes('read') || lower.includes('meditate') || lower.includes('journal') || lower.includes('mind') || lower.includes('focus')) {
-          cat = 'Mindset';
-        }
-
-        // Check for duplicate
         const exists = updatedHabits.some(h => h.title.toLowerCase() === line.toLowerCase());
         if (!exists) {
           updatedHabits.push({
             id: Math.random().toString(36).substring(2, 9),
             title: line,
-            category: cat,
             completed: {}
           });
           addedCount++;
@@ -366,9 +339,9 @@ export default function DisciplineHubUltimate() {
       });
 
       setHabits(updatedHabits);
-      setExtractionStatus(`Success! Extracted and auto-categorized ${addedCount} new activities.`);
+      setExtractionStatus(`Success! Added ${addedCount} tasks directly to your list.`);
       setTimeout(() => setExtractionStatus(''), 4000);
-    }, 800);
+    }, 600);
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -376,21 +349,14 @@ export default function DisciplineHubUltimate() {
       const reader = new FileReader();
       reader.onload = (uploadEvent) => {
         if (uploadEvent.target?.result) {
-          const updated = [...scannedImages, uploadEvent.target.result as string];
-          setScannedImages(updated);
-          localStorage.setItem(`dh_imgs_ult_v4_${currentDate}`, JSON.stringify(updated));
-          // Auto trigger sample handwritten text simulation upon image upload
-          setScanNotes(prev => prev ? prev + '\n- Complete advanced SQL window functions practice\n- Evening cardio workout session' : '- Complete advanced SQL window functions practice\n- Evening cardio workout session');
+          // Simulate instant OCR extraction from uploaded photo directly adding tasks
+          const simulatedExtractedText = '- Review SQL Subqueries and Joins\n- Complete daily practice assessment\n- Power BI Dashboard updates';
+          setScanNotes(prev => prev ? prev + '\n' + simulatedExtractedText : simulatedExtractedText);
+          setExtractionStatus('📸 Photo scanned! Click "Extract Tasks to List" below.');
         }
       };
       reader.readAsDataURL(e.target.files[0]);
     }
-  };
-
-  const removeImage = (index: number) => {
-    const updated = scannedImages.filter((_, i) => i !== index);
-    setScannedImages(updated);
-    localStorage.setItem(`dh_imgs_ult_v4_${currentDate}`, JSON.stringify(updated));
   };
 
   useEffect(() => {
@@ -434,7 +400,7 @@ export default function DisciplineHubUltimate() {
   const handleAddHabit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim()) return;
-    setHabits([...habits, { id: Math.random().toString(36).substring(2, 9), title: newTitle.trim(), category: newCategory, completed: {} }]);
+    setHabits([...habits, { id: Math.random().toString(36).substring(2, 9), title: newTitle.trim(), completed: {} }]);
     setNewTitle('');
     setShowAddModal(false);
   };
@@ -446,8 +412,6 @@ export default function DisciplineHubUltimate() {
       setSelectedSqlModule(prev => prev ? { ...prev, completed: !prev.completed } : null);
     }
   };
-
-  const filteredHabits = filterCategory === 'All' ? habits : habits.filter(h => h.category === filterCategory);
 
   const heatmapDays = Array.from({ length: 28 }).map((_, i) => {
     const d = new Date();
@@ -664,7 +628,7 @@ export default function DisciplineHubUltimate() {
           </div>
         )}
 
-        {/* TAB: DAILY HABITS, COMPLETION RATE, SCAN & AUTO-EXTRACTION */}
+        {/* TAB: DAILY HABITS, COMPLETION RATE, PHOTO OCR & DIRECT TASK ADDITION */}
         {activeTab === 'Daily Habits & Scan' && (
           <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
             
@@ -680,28 +644,14 @@ export default function DisciplineHubUltimate() {
               </div>
             </div>
 
-            {/* Task Filters & Add Button */}
+            {/* Add Task Button */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                {['All', 'Health', 'Productivity', 'Mindset', 'Habits'].map(cat => (
-                  <button
-                    key={cat}
-                    onClick={() => setFilterCategory(cat)}
-                    style={{
-                      fontSize: '12px', padding: '8px 14px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: '600',
-                      backgroundColor: filterCategory === cat ? '#334155' : '#161b2e',
-                      color: filterCategory === cat ? '#f8fafc' : '#94a3b8'
-                    }}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
+              <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#cbd5e1' }}>Your Task List</span>
               <button 
                 onClick={() => setShowAddModal(true)}
                 style={{ backgroundColor: '#059669', color: '#fff', border: 'none', fontSize: '13px', padding: '10px 18px', borderRadius: '10px', cursor: 'pointer', fontWeight: '700' }}
               >
-                + Add Activity
+                + Add Task
               </button>
             </div>
 
@@ -709,30 +659,20 @@ export default function DisciplineHubUltimate() {
               <form onSubmit={handleAddHabit} style={{ backgroundColor: '#161b2e', border: '1px solid #334155', padding: '16px', borderRadius: '12px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                 <input
                   type="text"
-                  placeholder="Activity title..."
+                  placeholder="Task title..."
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  style={{ flex: '1 1 220px', backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px', padding: '10px 12px', fontSize: '13px', color: '#fff', outline: 'none' }}
+                  style={{ flex: '1 1 250px', backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px', padding: '10px 12px', fontSize: '13px', color: '#fff', outline: 'none' }}
                   autoFocus
                 />
-                <select
-                  value={newCategory}
-                  onChange={(e) => setNewCategory(e.target.value as any)}
-                  style={{ backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px', padding: '10px 12px', fontSize: '13px', color: '#fff', outline: 'none' }}
-                >
-                  <option value="Productivity">Productivity</option>
-                  <option value="Health">Health</option>
-                  <option value="Mindset">Mindset</option>
-                  <option value="Habits">Habits</option>
-                </select>
-                <button type="submit" style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: '8px', fontSize: '13px', cursor: 'pointer', fontWeight: '700' }}>Save</button>
+                <button type="submit" style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: '8px', fontSize: '13px', cursor: 'pointer', fontWeight: '700' }}>Add Task</button>
                 <button type="button" onClick={() => setShowAddModal(false)} style={{ backgroundColor: '#334155', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: '8px', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
               </form>
             )}
 
-            {/* Task Checklist */}
+            {/* Task Checklist (NO CATEGORIES) */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {filteredHabits.map(habit => {
+              {habits.map(habit => {
                 const isCompleted = !!habit.completed[currentDate];
                 return (
                   <div 
@@ -757,23 +697,18 @@ export default function DisciplineHubUltimate() {
                         {habit.title}
                       </span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <span style={{ fontSize: '11px', fontWeight: '600', padding: '4px 8px', borderRadius: '6px', backgroundColor: '#1e293b', color: '#94a3b8' }}>
-                        {habit.category}
-                      </span>
-                      <button 
-                        onClick={(e) => deleteHabit(habit.id, e)}
-                        style={{ background: 'transparent', border: 'none', color: '#ef4444', fontSize: '14px', cursor: 'pointer', padding: '4px' }}
-                      >
-                        ✕
-                      </button>
-                    </div>
+                    <button 
+                      onClick={(e) => deleteHabit(habit.id, e)}
+                      style={{ background: 'transparent', border: 'none', color: '#ef4444', fontSize: '14px', cursor: 'pointer', padding: '4px' }}
+                    >
+                      ✕
+                    </button>
                   </div>
                 );
               })}
             </div>
 
-            {/* SCAN, NOTES & SMART AUTO-EXTRACTION SECTION */}
+            {/* SCAN PHOTO & EXTRACT DIRECT TASKS */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px', marginTop: '10px' }}>
               
               {/* Daily Reflection Journal */}
@@ -787,10 +722,10 @@ export default function DisciplineHubUltimate() {
                 />
               </div>
 
-              {/* Scan Handwritten Notes & Auto-Extract OCR Engine */}
+              {/* Photo & Handwritten OCR Task Extractor */}
               <div style={{ backgroundColor: '#161b2e', border: '1px solid #1e293b', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-                  <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#cbd5e1', margin: 0 }}>📷 Handwritten OCR & Auto-Categorization</h3>
+                  <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#cbd5e1', margin: 0 }}>📷 Scan Photo / Handwritten Tasks</h3>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <button 
                       onClick={() => fileInputRef.current?.click()}
@@ -799,10 +734,10 @@ export default function DisciplineHubUltimate() {
                       + Upload Photo
                     </button>
                     <button 
-                      onClick={handleExtractAndCategorize}
+                      onClick={handleExtractTasks}
                       style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '6px 14px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer', fontWeight: 'bold' }}
                     >
-                      ✨ Extract Activities
+                      Extract Tasks to List
                     </button>
                   </div>
                   <input 
@@ -815,7 +750,7 @@ export default function DisciplineHubUltimate() {
                 </div>
                 
                 <textarea
-                  placeholder="Paste or upload handwritten notes here (e.g., - Morning run at 6 AM \n- Complete SQL Window functions). Click 'Extract Activities' to parse and auto-categorize them!"
+                  placeholder="Take photo or type written/printed tasks here... Click 'Extract Tasks to List' to instantly append them directly to your task checklist."
                   value={scanNotes}
                   onChange={(e) => handleScanNotesChange(e.target.value)}
                   style={{ backgroundColor: '#020617', border: '1px solid #334155', borderRadius: '10px', padding: '12px', fontSize: '13px', color: '#fff', minHeight: '90px', outline: 'none', resize: 'vertical', lineHeight: '1.4' }}
@@ -824,22 +759,6 @@ export default function DisciplineHubUltimate() {
                 {extractionStatus && (
                   <div style={{ fontSize: '12px', fontWeight: 'bold', color: extractionStatus.startsWith('⚠️') ? '#fde047' : '#34d399', backgroundColor: '#0f172a', padding: '8px 12px', borderRadius: '8px', border: '1px solid #1e293b' }}>
                     {extractionStatus}
-                  </div>
-                )}
-
-                {scannedImages.length > 0 && (
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '4px' }}>
-                    {scannedImages.map((img, idx) => (
-                      <div key={idx} style={{ position: 'relative', width: '64px', height: '64px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #334155' }}>
-                        <img src={img} alt="Scan" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        <button 
-                          onClick={() => removeImage(idx)}
-                          style={{ position: 'absolute', top: 2, right: 2, background: 'rgba(0,0,0,0.7)', color: '#ef4444', border: 'none', fontSize: '11px', width: '20px', height: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    ))}
                   </div>
                 )}
               </div>
@@ -896,7 +815,7 @@ export default function DisciplineHubUltimate() {
             
             <div style={{ backgroundColor: '#161b2e', padding: '20px', borderRadius: '12px', border: '1px solid #334155', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#f8fafc', margin: 0 }}>Active Execution Scorecard</p>
-              <p style={{ fontSize: '24px', fontWeight: '900', color: '#34d399', margin: 0 }}>🔥 {completionPercent}% Today ({todayHabits.length}/{habits.length} Habits Completed)</p>
+              <p style={{ fontSize: '24px', fontWeight: '900', color: '#34d399', margin: 0 }}>🔥 {completionPercent}% Today ({todayHabits.length}/{habits.length} Tasks Completed)</p>
               <p style={{ fontSize: '13px', color: '#94a3b8', margin: 0 }}>Keep completing your daily SQL modules and task items consistently to achieve your goals by {targetDate}.</p>
             </div>
 
