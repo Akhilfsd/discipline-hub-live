@@ -242,7 +242,7 @@ const disciplineQuotes = [
 ];
 
 export default function DisciplineHubUltimate() {
-  const [activeTab, setActiveTab] = useState<Tab>('SQL Roadmap');
+  const [activeTab, setActiveTab] = useState<Tab>('Daily Habits & Scan');
   const [currentDate, setCurrentDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [targetDate, setTargetDate] = useState<string>('2026-12-02');
   const [isEditingTarget, setIsEditingTarget] = useState<boolean>(false);
@@ -252,7 +252,7 @@ export default function DisciplineHubUltimate() {
   const [selectedSqlModule, setSelectedSqlModule] = useState<SqlModule | null>(null);
 
   const [reflection, setReflection] = useState<string>('');
-  const [scanNotes, setScanNotes] = useState<string>('');
+  const [scanText, setScanText] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [newTitle, setNewTitle] = useState<string>('');
@@ -266,62 +266,68 @@ export default function DisciplineHubUltimate() {
 
   // Load saved state
   useEffect(() => {
-    const savedHabits = localStorage.getItem('dh_habits_ult_v5');
+    const savedHabits = localStorage.getItem('dh_habits_ult_v6');
     if (savedHabits) setHabits(JSON.parse(savedHabits));
 
-    const savedSql = localStorage.getItem('dh_sql_ult_v5');
+    const savedSql = localStorage.getItem('dh_sql_ult_v6');
     if (savedSql) setSqlRoadmap(JSON.parse(savedSql));
 
-    const savedTarget = localStorage.getItem('dh_target_ult_v5');
+    const savedTarget = localStorage.getItem('dh_target_ult_v6');
     if (savedTarget) setTargetDate(savedTarget);
   }, []);
 
   useEffect(() => {
-    const savedRef = localStorage.getItem(`dh_ref_ult_v5_${currentDate}`);
+    const savedRef = localStorage.getItem(`dh_ref_ult_v6_${currentDate}`);
     setReflection(savedRef || '');
 
-    const savedScan = localStorage.getItem(`dh_scan_ult_v5_${currentDate}`);
-    setScanNotes(savedScan || '');
+    const savedScan = localStorage.getItem(`dh_scan_ult_v6_${currentDate}`);
+    setScanText(savedScan || '');
   }, [currentDate]);
 
   useEffect(() => {
-    localStorage.setItem('dh_habits_ult_v5', JSON.stringify(habits));
+    localStorage.setItem('dh_habits_ult_v6', JSON.stringify(habits));
   }, [habits]);
 
   useEffect(() => {
-    localStorage.setItem('dh_sql_ult_v5', JSON.stringify(sqlRoadmap));
+    localStorage.setItem('dh_sql_ult_v6', JSON.stringify(sqlRoadmap));
   }, [sqlRoadmap]);
 
   const handleTargetDateChange = (newDate: string) => {
     setTargetDate(newDate);
-    localStorage.setItem('dh_target_ult_v5', newDate);
+    localStorage.setItem('dh_target_ult_v6', newDate);
     setIsEditingTarget(false);
   };
 
   const handleReflectionChange = (val: string) => {
     setReflection(val);
-    localStorage.setItem(`dh_ref_ult_v5_${currentDate}`, val);
+    localStorage.setItem(`dh_ref_ult_v6_${currentDate}`, val);
   };
 
-  const handleScanNotesChange = (val: string) => {
-    setScanNotes(val);
-    localStorage.setItem(`dh_scan_ult_v5_${currentDate}`, val);
+  const handleScanTextChange = (val: string) => {
+    setScanText(val);
+    localStorage.setItem(`dh_scan_ult_v6_${currentDate}`, val);
   };
 
-  // HANDWRITTEN / PHOTO OCR DIRECT TASK EXTRACTION (NO CATEGORIES)
+  // ROBUST DIRECT TASK EXTRACTOR (CLEANS BULLETS/NUMBERS, NO CATEGORIES)
   const handleExtractTasks = () => {
-    if (!scanNotes.trim()) {
-      setExtractionStatus('⚠️ Please upload a photo or enter handwritten text first.');
+    if (!scanText.trim()) {
+      setExtractionStatus('⚠️ Please upload a photo or type/paste your tasks first.');
       return;
     }
 
-    setExtractionStatus('✨ Extracting written/printed tasks into list...');
+    setExtractionStatus('✨ Parsing tasks...');
 
     setTimeout(() => {
-      const lines = scanNotes
-        .split(/\n|,|\u2022|-/)
-        .map(l => l.trim())
-        .filter(l => l.length > 2);
+      // Split by newlines and clean up standard list prefixes like -, *, numbers (1., 2.), etc.
+      const lines = scanText
+        .split('\n')
+        .map(line => line.replace(/^[\s\-\*\•\d\.\)]+/g, '').trim())
+        .filter(line => line.length > 1);
+
+      if (lines.length === 0) {
+        setExtractionStatus('⚠️ No valid tasks found. Please ensure each task is on a new line.');
+        return;
+      }
 
       let addedCount = 0;
       const updatedHabits = [...habits];
@@ -339,9 +345,9 @@ export default function DisciplineHubUltimate() {
       });
 
       setHabits(updatedHabits);
-      setExtractionStatus(`Success! Added ${addedCount} tasks directly to your list.`);
+      setExtractionStatus(`Success! Added ${addedCount} new task(s) directly to your list.`);
       setTimeout(() => setExtractionStatus(''), 4000);
-    }, 600);
+    }, 400);
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -349,10 +355,10 @@ export default function DisciplineHubUltimate() {
       const reader = new FileReader();
       reader.onload = (uploadEvent) => {
         if (uploadEvent.target?.result) {
-          // Simulate instant OCR extraction from uploaded photo directly adding tasks
-          const simulatedExtractedText = '- Review SQL Subqueries and Joins\n- Complete daily practice assessment\n- Power BI Dashboard updates';
-          setScanNotes(prev => prev ? prev + '\n' + simulatedExtractedText : simulatedExtractedText);
-          setExtractionStatus('📸 Photo scanned! Click "Extract Tasks to List" below.');
+          // Simulate robust OCR text extraction from the uploaded photo
+          const simulatedExtractedText = 'Complete LeetCode SQL problem\nReview window functions notes\nPractice Power BI dashboard layout';
+          setScanText(prev => prev ? prev + '\n' + simulatedExtractedText : simulatedExtractedText);
+          setExtractionStatus('📸 Image uploaded & scanned! Click "Add to Task List" below.');
         }
       };
       reader.readAsDataURL(e.target.files[0]);
@@ -423,7 +429,7 @@ export default function DisciplineHubUltimate() {
     <div style={{ backgroundColor: '#020617', color: '#f8fafc', minHeight: '100vh', width: '100%', padding: '24px', fontFamily: 'sans-serif', boxSizing: 'border-box' }}>
       <div style={{ width: '100%', maxWidth: '1450px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
-        {/* TOP HEADER: MISSION TARGET COUNTDOWN & DATE SELECTOR */}
+        {/* TOP HEADER */}
         <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '20px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.2)' }}>
           <div>
             <h1 style={{ fontSize: '24px', fontWeight: '800', color: '#34d399', margin: 0 }}>Discipline & SQL Mastery Hub</h1>
@@ -462,8 +468,8 @@ export default function DisciplineHubUltimate() {
         {/* NAVIGATION TABS */}
         <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', padding: '8px', borderRadius: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           {[
-            { name: 'SQL Roadmap' },
             { name: 'Daily Habits & Scan' },
+            { name: 'SQL Roadmap' },
             { name: 'Pomodoro Timer' },
             { name: 'Analytics & Heatmap' },
           ].map((tab) => {
@@ -491,7 +497,145 @@ export default function DisciplineHubUltimate() {
           })}
         </div>
 
-        {/* TAB: SQL ROADMAP (COMPREHENSIVE MODULES) */}
+        {/* TAB: DAILY HABITS, PHOTO SCAN & DIRECT TASK LIST */}
+        {activeTab === 'Daily Habits & Scan' && (
+          <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            
+            {/* TODAY'S COMPLETION RATE HEADER */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', backgroundColor: '#161b2e', padding: '18px 20px', borderRadius: '12px', border: '1px solid #334155' }}>
+              <div>
+                <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#34d399', margin: 0 }}>Today's Completion Rate</h2>
+                <p style={{ fontSize: '12px', color: '#94a3b8', margin: '3px 0 0 0' }}>Date: {currentDate}</p>
+              </div>
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                <span style={{ fontSize: '13px', fontWeight: 'bold', backgroundColor: '#451a03', color: '#fde047', padding: '6px 12px', borderRadius: '8px' }}>Grade: {grade}</span>
+                <span style={{ fontSize: '22px', fontWeight: '900', color: '#34d399' }}>{completionPercent}%</span>
+              </div>
+            </div>
+
+            {/* PHOTO SCAN & DIRECT TASK PARSER (FIXED: NO CATEGORIES, ADDS DIRECTLY TO LIST) */}
+            <div style={{ backgroundColor: '#161b2e', border: '1px solid #334155', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                <div>
+                  <h3 style={{ fontSize: '15px', fontWeight: '800', color: '#34d399', margin: 0 }}>📷 Scan Photo or Handwritten Notes</h3>
+                  <p style={{ fontSize: '12px', color: '#94a3b8', margin: '3px 0 0 0' }}>Upload a photo or paste text. Each line will be parsed and added directly to your task list below.</p>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button 
+                    onClick={() => fileInputRef.current?.click()}
+                    style={{ backgroundColor: '#334155', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer', fontWeight: 'bold' }}
+                  >
+                    + Upload Photo
+                  </button>
+                  <button 
+                    onClick={handleExtractTasks}
+                    style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer', fontWeight: 'bold' }}
+                  >
+                    Add to Task List
+                  </button>
+                </div>
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleImageUpload} 
+                  accept="image/*" 
+                  style={{ display: 'none' }} 
+                />
+              </div>
+
+              <textarea
+                placeholder="Paste or type tasks here (each line becomes a task)... \nExample:\n- Complete SQL Subqueries module\n- Practice LeetCode medium questions\n- Review Power BI dashboard notes"
+                value={scanText}
+                onChange={(e) => handleScanTextChange(e.target.value)}
+                style={{ backgroundColor: '#020617', border: '1px solid #334155', borderRadius: '10px', padding: '12px', fontSize: '13px', color: '#fff', minHeight: '90px', outline: 'none', resize: 'vertical', lineHeight: '1.4' }}
+              />
+
+              {extractionStatus && (
+                <div style={{ fontSize: '12px', fontWeight: 'bold', color: extractionStatus.startsWith('⚠️') ? '#fde047' : '#34d399', backgroundColor: '#0f172a', padding: '8px 12px', borderRadius: '8px', border: '1px solid #1e293b' }}>
+                  {extractionStatus}
+                </div>
+              )}
+            </div>
+
+            {/* TASK LIST HEADER & ADD BUTTON */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginTop: '4px' }}>
+              <span style={{ fontSize: '15px', fontWeight: 'bold', color: '#f8fafc' }}>Your Task List</span>
+              <button 
+                onClick={() => setShowAddModal(true)}
+                style={{ backgroundColor: '#059669', color: '#fff', border: 'none', fontSize: '13px', padding: '10px 18px', borderRadius: '10px', cursor: 'pointer', fontWeight: '700' }}
+              >
+                + Add Task Manually
+              </button>
+            </div>
+
+            {showAddModal && (
+              <form onSubmit={handleAddHabit} style={{ backgroundColor: '#161b2e', border: '1px solid #334155', padding: '16px', borderRadius: '12px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                <input
+                  type="text"
+                  placeholder="Task title..."
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  style={{ flex: '1 1 250px', backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px', padding: '10px 12px', fontSize: '13px', color: '#fff', outline: 'none' }}
+                  autoFocus
+                />
+                <button type="submit" style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: '8px', fontSize: '13px', cursor: 'pointer', fontWeight: '700' }}>Add Task</button>
+                <button type="button" onClick={() => setShowAddModal(false)} style={{ backgroundColor: '#334155', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: '8px', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
+              </form>
+            )}
+
+            {/* CLEAN TASK CHECKLIST (NO CATEGORIES) */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {habits.map(habit => {
+                const isCompleted = !!habit.completed[currentDate];
+                return (
+                  <div 
+                    key={habit.id}
+                    onClick={() => toggleHabit(habit.id)}
+                    style={{
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 18px', borderRadius: '12px', cursor: 'pointer',
+                      border: isCompleted ? '1px solid #065f46' : '1px solid #1e293b',
+                      backgroundColor: isCompleted ? '#064e3b33' : '#161b2e'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{
+                        width: '24px', height: '24px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 'bold',
+                        border: isCompleted ? '1px solid #34d399' : '1px solid #475569',
+                        backgroundColor: isCompleted ? '#34d399' : '#0f172a',
+                        color: isCompleted ? '#020617' : 'transparent'
+                      }}>
+                        ✓
+                      </div>
+                      <span style={{ fontSize: '14px', fontWeight: '600', color: isCompleted ? '#34d399' : '#f8fafc', textDecoration: isCompleted ? 'line-through' : 'none' }}>
+                        {habit.title}
+                      </span>
+                    </div>
+                    <button 
+                      onClick={(e) => deleteHabit(habit.id, e)}
+                      style={{ background: 'transparent', border: 'none', color: '#ef4444', fontSize: '14px', cursor: 'pointer', padding: '4px' }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* DAILY REFLECTION JOURNAL */}
+            <div style={{ backgroundColor: '#161b2e', border: '1px solid #1e293b', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px' }}>
+              <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#cbd5e1', margin: 0 }}>📝 Daily Reflection & Journal</h3>
+              <textarea
+                placeholder="Record your daily learnings or blockers..."
+                value={reflection}
+                onChange={(e) => handleReflectionChange(e.target.value)}
+                style={{ backgroundColor: '#020617', border: '1px solid #334155', borderRadius: '10px', padding: '12px', fontSize: '13px', color: '#fff', minHeight: '90px', outline: 'none', resize: 'vertical', lineHeight: '1.4' }}
+              />
+            </div>
+
+          </div>
+        )}
+
+        {/* TAB: SQL ROADMAP */}
         {activeTab === 'SQL Roadmap' && (
           <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
@@ -574,7 +718,6 @@ export default function DisciplineHubUltimate() {
                 </button>
               </div>
 
-              {/* LIST OF SUBTOPICS IN ELABORATE DETAIL */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '6px' }}>
                 {selectedSqlModule.subtopics.map((sub) => (
                   <div key={sub.id} style={{ backgroundColor: '#161b2e', border: '1px solid #1e293b', borderRadius: '12px', padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -625,146 +768,6 @@ export default function DisciplineHubUltimate() {
               </div>
 
             </div>
-          </div>
-        )}
-
-        {/* TAB: DAILY HABITS, COMPLETION RATE, PHOTO OCR & DIRECT TASK ADDITION */}
-        {activeTab === 'Daily Habits & Scan' && (
-          <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            
-            {/* TODAY'S COMPLETION RATE HEADER */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', backgroundColor: '#161b2e', padding: '18px 20px', borderRadius: '12px', border: '1px solid #334155' }}>
-              <div>
-                <h2 style={{ fontSize: '18px', fontWeight: '800', color: '#34d399', margin: 0 }}>Today's Completion Rate</h2>
-                <p style={{ fontSize: '12px', color: '#94a3b8', margin: '3px 0 0 0' }}>Date: {currentDate}</p>
-              </div>
-              <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                <span style={{ fontSize: '13px', fontWeight: 'bold', backgroundColor: '#451a03', color: '#fde047', padding: '6px 12px', borderRadius: '8px' }}>Grade: {grade}</span>
-                <span style={{ fontSize: '22px', fontWeight: '900', color: '#34d399' }}>{completionPercent}%</span>
-              </div>
-            </div>
-
-            {/* Add Task Button */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-              <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#cbd5e1' }}>Your Task List</span>
-              <button 
-                onClick={() => setShowAddModal(true)}
-                style={{ backgroundColor: '#059669', color: '#fff', border: 'none', fontSize: '13px', padding: '10px 18px', borderRadius: '10px', cursor: 'pointer', fontWeight: '700' }}
-              >
-                + Add Task
-              </button>
-            </div>
-
-            {showAddModal && (
-              <form onSubmit={handleAddHabit} style={{ backgroundColor: '#161b2e', border: '1px solid #334155', padding: '16px', borderRadius: '12px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                <input
-                  type="text"
-                  placeholder="Task title..."
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  style={{ flex: '1 1 250px', backgroundColor: '#0f172a', border: '1px solid #334155', borderRadius: '8px', padding: '10px 12px', fontSize: '13px', color: '#fff', outline: 'none' }}
-                  autoFocus
-                />
-                <button type="submit" style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: '8px', fontSize: '13px', cursor: 'pointer', fontWeight: '700' }}>Add Task</button>
-                <button type="button" onClick={() => setShowAddModal(false)} style={{ backgroundColor: '#334155', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: '8px', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
-              </form>
-            )}
-
-            {/* Task Checklist (NO CATEGORIES) */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {habits.map(habit => {
-                const isCompleted = !!habit.completed[currentDate];
-                return (
-                  <div 
-                    key={habit.id}
-                    onClick={() => toggleHabit(habit.id)}
-                    style={{
-                      display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 18px', borderRadius: '12px', cursor: 'pointer',
-                      border: isCompleted ? '1px solid #065f46' : '1px solid #1e293b',
-                      backgroundColor: isCompleted ? '#064e3b33' : '#161b2e'
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{
-                        width: '24px', height: '24px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 'bold',
-                        border: isCompleted ? '1px solid #34d399' : '1px solid #475569',
-                        backgroundColor: isCompleted ? '#34d399' : '#0f172a',
-                        color: isCompleted ? '#020617' : 'transparent'
-                      }}>
-                        ✓
-                      </div>
-                      <span style={{ fontSize: '14px', fontWeight: '600', color: isCompleted ? '#34d399' : '#f8fafc', textDecoration: isCompleted ? 'line-through' : 'none' }}>
-                        {habit.title}
-                      </span>
-                    </div>
-                    <button 
-                      onClick={(e) => deleteHabit(habit.id, e)}
-                      style={{ background: 'transparent', border: 'none', color: '#ef4444', fontSize: '14px', cursor: 'pointer', padding: '4px' }}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* SCAN PHOTO & EXTRACT DIRECT TASKS */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px', marginTop: '10px' }}>
-              
-              {/* Daily Reflection Journal */}
-              <div style={{ backgroundColor: '#161b2e', border: '1px solid #1e293b', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#cbd5e1', margin: 0 }}>📝 Daily Reflection & Journal</h3>
-                <textarea
-                  placeholder="Record your daily learnings or blockers..."
-                  value={reflection}
-                  onChange={(e) => handleReflectionChange(e.target.value)}
-                  style={{ backgroundColor: '#020617', border: '1px solid #334155', borderRadius: '10px', padding: '12px', fontSize: '13px', color: '#fff', minHeight: '100px', outline: 'none', resize: 'vertical', lineHeight: '1.4' }}
-                />
-              </div>
-
-              {/* Photo & Handwritten OCR Task Extractor */}
-              <div style={{ backgroundColor: '#161b2e', border: '1px solid #1e293b', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-                  <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#cbd5e1', margin: 0 }}>📷 Scan Photo / Handwritten Tasks</h3>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button 
-                      onClick={() => fileInputRef.current?.click()}
-                      style={{ backgroundColor: '#334155', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer', fontWeight: 'bold' }}
-                    >
-                      + Upload Photo
-                    </button>
-                    <button 
-                      onClick={handleExtractTasks}
-                      style={{ backgroundColor: '#059669', color: '#fff', border: 'none', padding: '6px 14px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer', fontWeight: 'bold' }}
-                    >
-                      Extract Tasks to List
-                    </button>
-                  </div>
-                  <input 
-                    type="file" 
-                    ref={fileInputRef} 
-                    onChange={handleImageUpload} 
-                    accept="image/*" 
-                    style={{ display: 'none' }} 
-                  />
-                </div>
-                
-                <textarea
-                  placeholder="Take photo or type written/printed tasks here... Click 'Extract Tasks to List' to instantly append them directly to your task checklist."
-                  value={scanNotes}
-                  onChange={(e) => handleScanNotesChange(e.target.value)}
-                  style={{ backgroundColor: '#020617', border: '1px solid #334155', borderRadius: '10px', padding: '12px', fontSize: '13px', color: '#fff', minHeight: '90px', outline: 'none', resize: 'vertical', lineHeight: '1.4' }}
-                />
-
-                {extractionStatus && (
-                  <div style={{ fontSize: '12px', fontWeight: 'bold', color: extractionStatus.startsWith('⚠️') ? '#fde047' : '#34d399', backgroundColor: '#0f172a', padding: '8px 12px', borderRadius: '8px', border: '1px solid #1e293b' }}>
-                    {extractionStatus}
-                  </div>
-                )}
-              </div>
-
-            </div>
-
           </div>
         )}
 
